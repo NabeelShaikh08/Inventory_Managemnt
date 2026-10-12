@@ -1,13 +1,17 @@
+import os
 from pathlib import Path
 from datetime import timedelta
 
 BASE_DIR = Path(__file__).resolve().parent.parent
 
-SECRET_KEY = 'django-insecure-alyafour-inventory-secret-key-change-in-production'
+SECRET_KEY = os.environ.get(
+    'SECRET_KEY',
+    'django-insecure-alyafour-inventory-secret-key-change-in-production',
+)
 
-DEBUG = True
+DEBUG = os.environ.get('DEBUG', 'True') == 'True'
 
-ALLOWED_HOSTS = ['*']
+ALLOWED_HOSTS = os.environ.get('ALLOWED_HOSTS', '*').split(',')
 
 INSTALLED_APPS = [
     'django.contrib.admin',
@@ -26,6 +30,7 @@ INSTALLED_APPS = [
 MIDDLEWARE = [
     'corsheaders.middleware.CorsMiddleware',
     'django.middleware.security.SecurityMiddleware',
+    'whitenoise.middleware.WhiteNoiseMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.common.CommonMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',
@@ -73,6 +78,9 @@ USE_I18N = True
 USE_TZ = True
 
 STATIC_URL = 'static/'
+STATIC_ROOT = BASE_DIR / 'staticfiles'
+STATICFILES_STORAGE = 'whitenoise.storage.CompressedManifestStaticFilesStorage'
+
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
 REST_FRAMEWORK = {
@@ -97,4 +105,9 @@ SIMPLE_JWT = {
     'AUTH_HEADER_TYPES': ('Bearer',),
 }
 
-CORS_ALLOW_ALL_ORIGINS = True
+# CORS — allow the frontend origin (set CORS_ALLOWED_ORIGINS on Render)
+_cors_origins = os.environ.get('CORS_ALLOWED_ORIGINS', '')
+if _cors_origins:
+    CORS_ALLOWED_ORIGINS = [o.strip() for o in _cors_origins.split(',')]
+else:
+    CORS_ALLOW_ALL_ORIGINS = True
