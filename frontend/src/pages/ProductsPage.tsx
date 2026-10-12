@@ -9,10 +9,8 @@ import ProductForm from '../components/ProductForm';
 import DeleteConfirmDialog from '../components/DeleteConfirmDialog';
 import {
   Plus, Search, ChevronLeft, ChevronRight, Pencil, Trash2,
-  RefreshCw, PackageOpen, Filter, Info,
+  RefreshCw, PackageOpen, Filter,
 } from 'lucide-react';
-import { useNavigate } from 'react-router-dom';
-import { useAuth } from '../context/AuthContext';
 
 const PAGE_SIZE = 10;
 
@@ -46,9 +44,6 @@ export default function ProductsPage({ readOnly = false }: { readOnly?: boolean 
   const [page, setPage] = useState(1);
   const [editingProduct, setEditingProduct] = useState<Product | null | undefined>(undefined);
   const [deletingProduct, setDeletingProduct] = useState<Product | null>(null);
-  const { role } = useAuth();
-  const navigate = useNavigate();
-
   const debouncedSearch = useDebounce(search, 300);
 
   const filters: ProductFilters = {
@@ -104,33 +99,6 @@ export default function ProductsPage({ readOnly = false }: { readOnly?: boolean 
             </button>
           )}
         </div>
-
-        {/* Read-only notice for Maker / Checker */}
-        {readOnly && (
-          <div className="flex items-start gap-3 p-4 mb-6 bg-blue-50 border border-blue-200 rounded-xl text-sm text-blue-700">
-            <Info size={17} className="mt-0.5 shrink-0" />
-            <div>
-              <span className="font-semibold">View-only mode.</span>
-              {' '}Inventory changes go through the approval workflow.{' '}
-              {role === 'maker' && (
-                <button
-                  onClick={() => navigate('/maker')}
-                  className="underline font-semibold hover:text-blue-900 transition"
-                >
-                  Submit a stock request
-                </button>
-              )}
-              {role === 'checker' && (
-                <button
-                  onClick={() => navigate('/checker')}
-                  className="underline font-semibold hover:text-blue-900 transition"
-                >
-                  Go to approval queue
-                </button>
-              )}
-            </div>
-          </div>
-        )}
 
         {/* Filters */}
         <div className="bg-white rounded-xl border border-slate-200 p-4 mb-6 flex flex-col sm:flex-row gap-3">
