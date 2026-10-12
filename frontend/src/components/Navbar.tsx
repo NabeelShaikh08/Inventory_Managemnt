@@ -1,9 +1,10 @@
-import { Package, LogOut, User } from 'lucide-react';
+import { LogOut, User } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 import { useNavigate } from 'react-router-dom';
+import logo from '../assets/alyafour-logo.svg';
 
 export default function Navbar() {
-  const { username, logout } = useAuth();
+  const { username, role, logout } = useAuth();
   const navigate = useNavigate();
 
   const handleLogout = () => {
@@ -11,22 +12,31 @@ export default function Navbar() {
     navigate('/login');
   };
 
+  const roleBadge: Record<string, string> = {
+    maker: 'bg-blue-100 text-blue-700',
+    checker: 'bg-green-100 text-green-700',
+    superadmin: 'bg-orange-100 text-orange-700',
+  };
+
+  const roleLabel: Record<string, string> = {
+    maker: 'Maker',
+    checker: 'Checker',
+    superadmin: 'Super Admin',
+  };
+
   return (
-    <nav className="bg-white border-b border-slate-200 px-4 sm:px-6 py-4">
+    <nav className="bg-white border-b border-slate-200 px-4 sm:px-6 py-3">
       <div className="max-w-7xl mx-auto flex items-center justify-between">
-        <div className="flex items-center gap-3">
-          <div className="bg-blue-600 p-2 rounded-lg">
-            <Package className="text-white" size={20} />
-          </div>
-          <div>
-            <h1 className="text-base font-bold text-slate-800 leading-tight">Inventory Manager</h1>
-            <p className="text-xs text-slate-400 leading-tight hidden sm:block">Al Yafour General Contracting</p>
-          </div>
-        </div>
+        <img src={logo} alt="Al Yafour General Contracting" className="h-9" />
 
         <div className="flex items-center gap-3">
-          <div className="hidden sm:flex items-center gap-2 text-sm text-slate-600">
-            <User size={16} className="text-slate-400" />
+          {role && (
+            <span className={`hidden sm:inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-semibold ${roleBadge[role] ?? 'bg-slate-100 text-slate-600'}`}>
+              {roleLabel[role] ?? role}
+            </span>
+          )}
+          <div className="hidden sm:flex items-center gap-1.5 text-sm text-slate-600">
+            <User size={15} className="text-slate-400" />
             <span>{username}</span>
           </div>
           <button

@@ -1,0 +1,17 @@
+<svg width="220" height="44" viewBox="0 0 220 44" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <!-- Orange square icon with building silhouette -->
+  <rect width="44" height="44" rx="8" fill="#ED7E07"/>
+  <!-- Building icon (simple construction building) -->
+  <rect x="9" y="22" width="10" height="15" fill="white"/>
+  <rect x="25" y="14" width="10" height="23" fill="white"/>
+  <rect x="11" y="25" width="3" height="3" fill="#ED7E07"/>
+  <rect x="27" y="17" width="3" height="3" fill="#ED7E07"/>
+  <rect x="27" y="24" width="3" height="3" fill="#ED7E07"/>
+  <!-- Crane arm -->
+  <rect x="8" y="12" width="2" height="12" fill="white"/>
+  <rect x="8" y="12" width="20" height="2" fill="white"/>
+  <rect x="26" y="12" width="2" height="5" fill="white"/>
+  <!-- Company name -->
+  <text x="54" y="17" font-family="system-ui, -apple-system, sans-serif" font-size="13" font-weight="700" fill="#ED7E07" letter-spacing="0.5">AL YAFOUR</text>
+  <text x="54" y="33" font-family="system-ui, -apple-system, sans-serif" font-size="9.5" font-weight="500" fill="#64748b" letter-spacing="0.3">GENERAL CONTRACTING</text>
+</svg>

@@ -38,7 +38,7 @@ function SkeletonRow() {
   );
 }
 
-export default function ProductsPage() {
+export default function ProductsPage({ readOnly = false }: { readOnly?: boolean }) {
   const [search, setSearch] = useState('');
   const [categoryFilter, setCategoryFilter] = useState<number | ''>('');
   const [page, setPage] = useState(1);
@@ -90,13 +90,15 @@ export default function ProductsPage() {
               {data ? `${data.count} item${data.count !== 1 ? 's' : ''} total` : 'Loading…'}
             </p>
           </div>
-          <button
-            onClick={() => setEditingProduct(null)}
-            className="flex items-center gap-2 px-4 py-2.5 bg-blue-600 hover:bg-blue-700 text-white font-semibold rounded-lg transition shadow-sm"
-          >
-            <Plus size={18} />
-            Add Product
-          </button>
+          {!readOnly && (
+            <button
+              onClick={() => setEditingProduct(null)}
+              className="flex items-center gap-2 px-4 py-2.5 bg-blue-600 hover:bg-blue-700 text-white font-semibold rounded-lg transition shadow-sm"
+            >
+              <Plus size={18} />
+              Add Product
+            </button>
+          )}
         </div>
 
         {/* Filters */}
@@ -215,22 +217,26 @@ export default function ProductsPage() {
                             {new Date(product.created_at).toLocaleDateString('en-GB')}
                           </td>
                           <td className="px-4 py-3">
-                            <div className="flex items-center justify-center gap-2">
-                              <button
-                                onClick={() => setEditingProduct(product)}
-                                className="p-1.5 text-slate-400 hover:text-blue-600 hover:bg-blue-50 rounded-lg transition"
-                                title="Edit product"
-                              >
-                                <Pencil size={15} />
-                              </button>
-                              <button
-                                onClick={() => setDeletingProduct(product)}
-                                className="p-1.5 text-slate-400 hover:text-red-600 hover:bg-red-50 rounded-lg transition"
-                                title="Delete product"
-                              >
-                                <Trash2 size={15} />
-                              </button>
-                            </div>
+                            {readOnly ? (
+                              <span className="text-xs text-slate-300 px-2">—</span>
+                            ) : (
+                              <div className="flex items-center justify-center gap-2">
+                                <button
+                                  onClick={() => setEditingProduct(product)}
+                                  className="p-1.5 text-slate-400 hover:text-blue-600 hover:bg-blue-50 rounded-lg transition"
+                                  title="Edit product"
+                                >
+                                  <Pencil size={15} />
+                                </button>
+                                <button
+                                  onClick={() => setDeletingProduct(product)}
+                                  className="p-1.5 text-slate-400 hover:text-red-600 hover:bg-red-50 rounded-lg transition"
+                                  title="Delete product"
+                                >
+                                  <Trash2 size={15} />
+                                </button>
+                              </div>
+                            )}
                           </td>
                         </tr>
                       ))

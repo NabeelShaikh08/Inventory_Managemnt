@@ -4,7 +4,8 @@ import { useForm } from 'react-hook-form';
 import { z } from 'zod';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { useAuth } from '../context/AuthContext';
-import { Package, Eye, EyeOff } from 'lucide-react';
+import { Eye, EyeOff } from 'lucide-react';
+import logo from '../assets/alyafour-logo.svg';
 
 const schema = z.object({
   username: z.string().min(1, 'Username is required'),
@@ -28,8 +29,10 @@ export default function LoginPage() {
   const onSubmit = async (data: FormData) => {
     setServerError('');
     try {
-      await login(data);
-      navigate('/');
+      const role = await login(data);
+      if (role === 'checker') navigate('/checker');
+      else if (role === 'superadmin') navigate('/admin');
+      else navigate('/maker');
     } catch {
       setServerError('Invalid username or password. Please try again.');
     }
@@ -39,11 +42,9 @@ export default function LoginPage() {
     <div className="min-h-screen bg-gradient-to-br from-slate-900 to-slate-700 flex items-center justify-center p-4">
       <div className="bg-white rounded-2xl shadow-2xl w-full max-w-md p-8">
         <div className="flex flex-col items-center mb-8">
-          <div className="bg-blue-600 p-3 rounded-xl mb-4">
-            <Package className="text-white" size={32} />
-          </div>
-          <h1 className="text-2xl font-bold text-slate-800">Inventory Manager</h1>
-          <p className="text-slate-500 text-sm mt-1">Al Yafour General Contracting</p>
+          <img src={logo} alt="Al Yafour General Contracting" className="h-12 mb-4" />
+          <h1 className="text-xl font-bold text-slate-800">Inventory Management</h1>
+          <p className="text-slate-500 text-sm mt-1">Sign in to continue</p>
         </div>
 
         <form onSubmit={handleSubmit(onSubmit)} noValidate>
@@ -56,7 +57,7 @@ export default function LoginPage() {
               type="text"
               autoComplete="username"
               {...register('username')}
-              className={`w-full px-4 py-2.5 rounded-lg border text-slate-800 focus:outline-none focus:ring-2 focus:ring-blue-500 transition ${
+              className={`w-full px-4 py-2.5 rounded-lg border text-slate-800 focus:outline-none focus:ring-2 focus:ring-orange-400 transition ${
                 errors.username ? 'border-red-400' : 'border-slate-300'
               }`}
               placeholder="Enter your username"
@@ -76,7 +77,7 @@ export default function LoginPage() {
                 type={showPassword ? 'text' : 'password'}
                 autoComplete="current-password"
                 {...register('password')}
-                className={`w-full px-4 py-2.5 pr-10 rounded-lg border text-slate-800 focus:outline-none focus:ring-2 focus:ring-blue-500 transition ${
+                className={`w-full px-4 py-2.5 pr-10 rounded-lg border text-slate-800 focus:outline-none focus:ring-2 focus:ring-orange-400 transition ${
                   errors.password ? 'border-red-400' : 'border-slate-300'
                 }`}
                 placeholder="Enter your password"
@@ -104,15 +105,20 @@ export default function LoginPage() {
           <button
             type="submit"
             disabled={isSubmitting}
-            className="w-full py-2.5 px-4 bg-blue-600 hover:bg-blue-700 disabled:bg-blue-400 text-white font-semibold rounded-lg transition focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2"
+            className="w-full py-2.5 px-4 bg-[#ED7E07] hover:bg-[#d06d06] disabled:bg-orange-300 text-white font-semibold rounded-lg transition focus:outline-none focus:ring-2 focus:ring-orange-400 focus:ring-offset-2"
           >
             {isSubmitting ? 'Signing in…' : 'Sign In'}
           </button>
         </form>
 
-        <p className="mt-6 text-center text-xs text-slate-400">
-          Test accounts: <strong>admin</strong> / Admin@123 &nbsp;·&nbsp; <strong>storekeeper</strong> / Store@123
-        </p>
+        <div className="mt-6 p-3 bg-slate-50 rounded-lg border border-slate-200">
+          <p className="text-xs text-slate-500 font-medium mb-2">Test accounts:</p>
+          <div className="space-y-1 text-xs text-slate-600">
+            <div className="flex justify-between"><span><strong>storekeeper</strong> (Maker)</span><span>Store@123</span></div>
+            <div className="flex justify-between"><span><strong>checker</strong> (Checker)</span><span>Checker@123</span></div>
+            <div className="flex justify-between"><span><strong>admin</strong> (Super Admin)</span><span>Admin@123</span></div>
+          </div>
+        </div>
       </div>
     </div>
   );

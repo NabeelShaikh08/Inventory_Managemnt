@@ -53,3 +53,86 @@ export interface ProductFormData {
   category: number;
   is_active: boolean;
 }
+
+export type UserRole = 'maker' | 'checker' | 'superadmin';
+
+export interface Me {
+  id: number;
+  username: string;
+  first_name: string;
+  last_name: string;
+  email: string;
+  role: UserRole;
+}
+
+export type LineAction = 'stock_in' | 'new_product' | 'edit_product';
+export type LineStatus = 'pending' | 'approved' | 'rejected';
+export type RequestStatus =
+  | 'pending'
+  | 'approved'
+  | 'partially_approved'
+  | 'rejected'
+  | 'withdrawn';
+
+export interface RequestLine {
+  id: number;
+  action: LineAction;
+  product: number | null;
+  product_name: string | null;
+  quantity: string | null;
+  unit_cost: string | null;
+  supplier: string;
+  proposed_name: string;
+  proposed_price: string | null;
+  proposed_stock: number | null;
+  proposed_category: number | null;
+  proposed_category_name: string | null;
+  proposed_description: string;
+  line_status: LineStatus;
+  rejection_reason: string;
+}
+
+export interface StockRequest {
+  id: number;
+  status: RequestStatus;
+  document_ref: string;
+  remarks: string;
+  created_by: number;
+  created_by_username: string;
+  decided_by: number | null;
+  decided_by_username: string | null;
+  created_at: string;
+  decided_at: string | null;
+  lines: RequestLine[];
+  line_count?: number;
+}
+
+export interface RequestLineInput {
+  action: LineAction;
+  product?: number | null;
+  quantity?: string;
+  unit_cost?: string;
+  supplier?: string;
+  proposed_name?: string;
+  proposed_price?: string;
+  proposed_stock?: number;
+  proposed_category?: number | null;
+  proposed_description?: string;
+}
+
+export interface CreateStockRequestInput {
+  document_ref?: string;
+  remarks?: string;
+  lines: RequestLineInput[];
+}
+
+export interface LineDecision {
+  line_id: number;
+  decision: 'approved' | 'rejected';
+  rejection_reason?: string;
+}
+
+export interface DecideRequestInput {
+  lines: LineDecision[];
+  remarks?: string;
+}
