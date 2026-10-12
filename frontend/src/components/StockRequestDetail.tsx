@@ -84,7 +84,7 @@ export default function StockRequestDetail({ requestId, onClose, canDecide, onDe
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-4">
       <div className="bg-white rounded-2xl shadow-2xl w-full max-w-2xl max-h-[90vh] flex flex-col">
-        <div className="flex items-center justify-between p-6 border-b border-slate-200">
+        <div className="flex items-center justify-between p-4 sm:p-6 border-b border-slate-200">
           <div>
             <h2 className="text-lg font-bold text-slate-800">
               {isLoading ? 'Loading…' : `REQ-${String(req?.id ?? 0).padStart(4, '0')}`}
@@ -105,7 +105,7 @@ export default function StockRequestDetail({ requestId, onClose, canDecide, onDe
           </button>
         </div>
 
-        <div className="p-6 overflow-y-auto flex-1 space-y-5">
+        <div className="p-4 sm:p-6 overflow-y-auto flex-1 space-y-5">
           {isLoading ? (
             <div className="flex justify-center py-8">
               <Loader2 size={24} className="animate-spin text-slate-400" />

@@ -99,7 +99,7 @@ export default function StockRequestForm({ onClose, onSuccess }: Props) {
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-4">
       <div className="bg-white rounded-2xl shadow-2xl w-full max-w-2xl max-h-[90vh] flex flex-col">
-        <div className="flex items-center justify-between p-6 border-b border-slate-200">
+        <div className="flex items-center justify-between p-4 sm:p-6 border-b border-slate-200">
           <h2 className="text-lg font-bold text-slate-800">New Stock Request</h2>
           <button
             onClick={onClose}
@@ -110,8 +110,8 @@ export default function StockRequestForm({ onClose, onSuccess }: Props) {
         </div>
 
         <form onSubmit={handleSubmit} className="flex flex-col flex-1 overflow-hidden">
-          <div className="p-6 overflow-y-auto flex-1 space-y-5">
-            <div className="grid grid-cols-2 gap-4">
+          <div className="p-4 sm:p-6 overflow-y-auto flex-1 space-y-5">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <div>
                 <label className="block text-sm font-medium text-slate-700 mb-1">
                   Document Ref <span className="text-slate-400 font-normal">(optional)</span>
@@ -202,7 +202,7 @@ export default function StockRequestForm({ onClose, onSuccess }: Props) {
                     )}
 
                     {line.action === 'stock_in' && (
-                      <div className="grid grid-cols-3 gap-3">
+                      <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
                         <div>
                           <label className="block text-xs font-medium text-slate-600 mb-1">Quantity</label>
                           <input
@@ -242,7 +242,7 @@ export default function StockRequestForm({ onClose, onSuccess }: Props) {
                     )}
 
                     {(line.action === 'new_product' || line.action === 'edit_product') && (
-                      <div className="grid grid-cols-2 gap-3">
+                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                         <div>
                           <label className="block text-xs font-medium text-slate-600 mb-1">
                             {line.action === 'new_product' ? 'Product Name *' : 'New Name (optional)'}
@@ -294,7 +294,7 @@ export default function StockRequestForm({ onClose, onSuccess }: Props) {
                             ))}
                           </select>
                         </div>
-                        <div className="col-span-2">
+                        <div className="col-span-1 sm:col-span-2">
                           <label className="block text-xs font-medium text-slate-600 mb-1">Description</label>
                           <textarea
                             value={line.proposed_description}
@@ -318,7 +318,7 @@ export default function StockRequestForm({ onClose, onSuccess }: Props) {
             )}
           </div>
 
-          <div className="p-6 border-t border-slate-200 flex justify-end gap-3">
+          <div className="p-4 sm:p-6 border-t border-slate-200 flex justify-end gap-3">
             <button
               type="button"
               onClick={onClose}

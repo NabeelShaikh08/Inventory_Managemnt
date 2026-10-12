@@ -99,7 +99,7 @@ export default function ProductForm({ product, onClose }: Props) {
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm">
       <div className="bg-white rounded-2xl shadow-2xl w-full max-w-lg max-h-[90vh] overflow-y-auto">
-        <div className="flex items-center justify-between p-6 border-b border-slate-100">
+        <div className="flex items-center justify-between p-4 sm:p-6 border-b border-slate-100">
           <h2 className="text-lg font-semibold text-slate-800">
             {product ? 'Edit Product' : 'Add New Product'}
           </h2>
@@ -111,7 +111,7 @@ export default function ProductForm({ product, onClose }: Props) {
           </button>
         </div>
 
-        <form onSubmit={onSubmit} noValidate className="p-6 space-y-5">
+        <form onSubmit={onSubmit} noValidate className="p-4 sm:p-6 space-y-5">
           <div>
             <label className="block text-sm font-medium text-slate-700 mb-1">
               Product Name <span className="text-red-500">*</span>
@@ -135,7 +135,7 @@ export default function ProductForm({ product, onClose }: Props) {
             />
           </div>
 
-          <div className="grid grid-cols-2 gap-4">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div>
               <label className="block text-sm font-medium text-slate-700 mb-1">
                 Price (AED) <span className="text-red-500">*</span>
