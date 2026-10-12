@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { useNavigate } from 'react-router-dom';
-import { Plus, ChevronLeft, ChevronRight, Eye, XCircle, PackageOpen, RefreshCw, RotateCcw } from 'lucide-react';
+import { Plus, ChevronLeft, ChevronRight, Eye, XCircle, PackageOpen, RefreshCw, Pencil } from 'lucide-react';
 import Navbar from '../components/Navbar';
 import StockRequestForm from '../components/StockRequestForm';
 import StockRequestDetail from '../components/StockRequestDetail';
@@ -241,10 +241,11 @@ export default function MakerPage() {
                               {req.status === 'withdrawn' && (
                                 <button
                                   onClick={() => setResubmitId(req.id)}
-                                  className="p-1.5 text-slate-400 hover:text-green-600 hover:bg-green-50 rounded-lg transition"
-                                  title="Re-submit as new request"
+                                  className="flex items-center gap-1 px-2 py-1 text-xs font-medium text-slate-500 hover:text-orange-600 hover:bg-orange-50 border border-slate-200 hover:border-orange-300 rounded-lg transition"
+                                  title="Edit and re-submit as new request"
                                 >
-                                  <RotateCcw size={15} />
+                                  <Pencil size={12} />
+                                  Edit &amp; Re-submit
                                 </button>
                               )}
                             </div>
