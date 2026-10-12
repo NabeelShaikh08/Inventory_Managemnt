@@ -7,9 +7,10 @@ import type { Product, ProductFilters } from '../types';
 import Navbar from '../components/Navbar';
 import ProductForm from '../components/ProductForm';
 import DeleteConfirmDialog from '../components/DeleteConfirmDialog';
+import BulkProductUpload from '../components/BulkProductUpload';
 import {
   Plus, Search, ChevronLeft, ChevronRight, Pencil, Trash2,
-  RefreshCw, PackageOpen, Filter, X, ArrowUpDown,
+  RefreshCw, PackageOpen, Filter, X, ArrowUpDown, Upload,
 } from 'lucide-react';
 
 const PAGE_SIZE = 10;
@@ -45,6 +46,7 @@ export default function ProductsPage({ readOnly = false }: { readOnly?: boolean 
   const [page, setPage] = useState(1);
   const [editingProduct, setEditingProduct] = useState<Product | null | undefined>(undefined);
   const [deletingProduct, setDeletingProduct] = useState<Product | null>(null);
+  const [showBulkUpload, setShowBulkUpload] = useState(false);
   const debouncedSearch = useDebounce(search, 300);
 
   const filters: ProductFilters = {
@@ -102,13 +104,22 @@ export default function ProductsPage({ readOnly = false }: { readOnly?: boolean 
             </p>
           </div>
           {!readOnly && (
-            <button
-              onClick={() => setEditingProduct(null)}
-              className="flex items-center gap-2 px-4 py-2.5 bg-blue-600 hover:bg-blue-700 text-white font-semibold rounded-lg transition shadow-sm"
-            >
-              <Plus size={18} />
-              Add Product
-            </button>
+            <div className="flex items-center gap-2">
+              <button
+                onClick={() => setShowBulkUpload(true)}
+                className="flex items-center gap-2 px-4 py-2.5 border border-slate-300 text-slate-700 hover:bg-slate-100 font-semibold rounded-lg transition shadow-sm text-sm"
+              >
+                <Upload size={16} />
+                Import CSV
+              </button>
+              <button
+                onClick={() => setEditingProduct(null)}
+                className="flex items-center gap-2 px-4 py-2.5 bg-blue-600 hover:bg-blue-700 text-white font-semibold rounded-lg transition shadow-sm"
+              >
+                <Plus size={18} />
+                Add Product
+              </button>
+            </div>
           )}
         </div>
 
@@ -355,6 +366,11 @@ export default function ProductsPage({ readOnly = false }: { readOnly?: boolean 
         <DeleteConfirmDialog
           product={deletingProduct}
           onClose={() => setDeletingProduct(null)}
+        />
+      )}
+      {showBulkUpload && (
+        <BulkProductUpload
+          onClose={() => setShowBulkUpload(false)}
         />
       )}
     </div>

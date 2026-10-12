@@ -54,10 +54,6 @@ function emptyLine(): LineFormState {
   };
 }
 
-const CSV_TEMPLATE = `action,product_name,quantity,unit_cost,supplier,proposed_name,proposed_price,proposed_stock,category,description
-stock_in,Portland Cement OPC 42.5R,100,28.50,Al Futtaim Building Materials,,,,,
-new_product,,,,, High-Strength Rebar 16mm,12.00,500,Steel & Rebar,Deformed steel bar for structural use
-stock_in,River Sand (Fine Grade),200,8.00,Emirates Sand Co,,,,,`;
 
 function parseCsv(text: string): CsvRow[] {
   const lines = text.trim().split('\n').filter((l) => l.trim());
@@ -488,21 +484,13 @@ export default function StockRequestForm({ onClose, onSuccess }: Props) {
                     <p className="text-xs text-blue-600">
                       Valid actions: <code className="font-mono">stock_in</code>, <code className="font-mono">new_product</code>, <code className="font-mono">edit_product</code>
                     </p>
-                    <button
-                      type="button"
-                      onClick={() => {
-                        const blob = new Blob([CSV_TEMPLATE], { type: 'text/csv' });
-                        const url = URL.createObjectURL(blob);
-                        const a = document.createElement('a');
-                        a.href = url;
-                        a.download = 'inventory_upload_template.csv';
-                        a.click();
-                        URL.revokeObjectURL(url);
-                      }}
+                    <a
+                      href="/inventory_upload_template.csv"
+                      download="inventory_upload_template.csv"
                       className="inline-flex items-center gap-1 text-xs font-medium text-blue-700 hover:underline"
                     >
                       Download template CSV
-                    </button>
+                    </a>
                   </div>
                 </div>
 
