@@ -93,7 +93,7 @@ export default function StockRequestDetail({ requestId, onClose, canDecide, onDe
               <p className="text-sm text-slate-500 mt-0.5">
                 Submitted by <span className="font-medium text-slate-700">{req.created_by_username}</span>
                 {' · '}
-                {new Date(req.created_at).toLocaleDateString('en-GB')}
+                {new Date(req.created_at).toLocaleString('en-GB', { day:'2-digit', month:'2-digit', year:'numeric', hour:'2-digit', minute:'2-digit' })}
               </p>
             )}
           </div>
@@ -142,7 +142,7 @@ export default function StockRequestDetail({ requestId, onClose, canDecide, onDe
                   <p className="text-slate-700">
                     <span className="font-medium">{req.decided_by_username}</span>
                     {req.decided_at && (
-                      <span className="text-slate-400"> · {new Date(req.decided_at).toLocaleDateString('en-GB')}</span>
+                      <span className="text-slate-400"> · {new Date(req.decided_at).toLocaleString('en-GB', { day:'2-digit', month:'2-digit', year:'numeric', hour:'2-digit', minute:'2-digit' })}</span>
                     )}
                   </p>
                 </div>
