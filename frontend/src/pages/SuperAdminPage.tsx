@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { useQuery } from '@tanstack/react-query';
+import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { useNavigate } from 'react-router-dom';
 import { Eye, ChevronLeft, ChevronRight, PackageOpen, RefreshCw, Package, ClipboardList } from 'lucide-react';
 import Navbar from '../components/Navbar';
@@ -37,6 +37,7 @@ export default function SuperAdminPage() {
   const [viewingId, setViewingId] = useState<number | null>(null);
   const [activeTab, setActiveTab] = useState<'requests' | 'inventory'>('requests');
   const navigate = useNavigate();
+  const queryClient = useQueryClient();
 
   const { data: requestsData, isLoading: reqLoading, isError: reqError, refetch: reqRefetch } = useQuery({
     queryKey: ['requests', page],
@@ -260,7 +261,11 @@ export default function SuperAdminPage() {
         <StockRequestDetail
           requestId={viewingId}
           onClose={() => setViewingId(null)}
-          canDecide={false}
+          canDecide={true}
+          onDecided={() => {
+            queryClient.invalidateQueries({ queryKey: ['requests'] });
+            setViewingId(null);
+          }}
         />
       )}
     </div>

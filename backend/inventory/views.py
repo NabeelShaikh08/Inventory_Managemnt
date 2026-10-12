@@ -170,12 +170,15 @@ class StockRequestViewSet(viewsets.ModelViewSet):
             line.product.save()
         elif line.action == 'new_product':
             from .models import Product as P
+            category = line.proposed_category
+            if category is None and line.product:
+                category = line.product.category
             P.objects.create(
                 name=line.proposed_name or 'Unnamed Product',
                 description=line.proposed_description or '',
                 price=line.proposed_price or 0,
                 stock=line.proposed_stock or 0,
-                category=line.proposed_category or line.product.category if line.product else None,
+                category=category,
                 is_active=True,
             )
         elif line.action == 'edit_product' and line.product:
