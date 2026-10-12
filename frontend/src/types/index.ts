@@ -83,6 +83,7 @@ export interface RequestLine {
   unit_cost: string | null;
   supplier: string;
   proposed_name: string;
+  proposed_sku: string;
   proposed_price: string | null;
   proposed_stock: number | null;
   proposed_category: number | null;
@@ -138,6 +139,7 @@ export interface RequestLineInput {
   reorder_level?: number;
   proposed_reorder_level?: number;
   barcode?: string;
+  proposed_sku?: string;
 }
 
 export interface CreateStockRequestInput {

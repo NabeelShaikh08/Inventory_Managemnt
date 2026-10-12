@@ -24,6 +24,7 @@ interface LineFormState {
   supplier: string;
   uom: string;
   proposed_name: string;
+  proposed_sku: string;
   proposed_price: string;
   proposed_stock: string;
   proposed_category_id: string;
@@ -67,6 +68,7 @@ function emptyLine(): LineFormState {
     supplier: '',
     uom: '',
     proposed_name: '',
+    proposed_sku: '',
     proposed_price: '',
     proposed_stock: '',
     proposed_category_id: '',
@@ -139,6 +141,7 @@ function lineFromRequestLine(rl: RequestLine): LineFormState {
     supplier: rl.supplier ?? '',
     uom: rl.uom ?? '',
     proposed_name: rl.proposed_name ?? '',
+    proposed_sku: rl.proposed_sku ?? '',
     proposed_price: rl.proposed_price ?? '',
     proposed_stock: rl.proposed_stock != null ? String(rl.proposed_stock) : '',
     proposed_category_id: rl.proposed_category != null ? String(rl.proposed_category) : '',
@@ -211,6 +214,7 @@ export default function StockRequestForm({ onClose, onSuccess, prefillLines, pre
         if (l.uom) base.uom = l.uom;
       } else {
         if (l.proposed_name) base.proposed_name = l.proposed_name;
+        if (l.proposed_sku) base.proposed_sku = l.proposed_sku;
         if (l.proposed_price) base.proposed_price = l.proposed_price;
         if (l.proposed_stock) base.proposed_stock = Number(l.proposed_stock);
         if (l.proposed_category_id) base.proposed_category = Number(l.proposed_category_id);
@@ -402,15 +406,15 @@ export default function StockRequestForm({ onClose, onSuccess, prefillLines, pre
                       </div>
 
                       <div>
-                        <label className="block text-xs font-medium text-slate-600 mb-1">Action</label>
+                        <label className="block text-xs font-medium text-slate-600 mb-1">Type</label>
                         <select
                           value={line.action}
                           onChange={(e) => updateLine(idx, 'action', e.target.value)}
                           className="w-full px-3 py-2 border border-slate-300 rounded-lg text-sm text-slate-800 focus:outline-none focus:ring-2 focus:ring-orange-400 transition"
                         >
                           <option value="stock_in">Stock In</option>
-                          <option value="new_product">New Product</option>
-                          <option value="edit_product">Edit Product</option>
+                          <option value="new_product">New Product / SKU</option>
+                          <option value="edit_product">Edit Product Details</option>
                         </select>
                       </div>
 
@@ -526,6 +530,18 @@ export default function StockRequestForm({ onClose, onSuccess, prefillLines, pre
                               onChange={(e) => updateLine(idx, 'proposed_name', e.target.value)}
                               required={line.action === 'new_product'}
                               placeholder="Product name"
+                              className="w-full px-3 py-2 border border-slate-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-orange-400 transition"
+                            />
+                          </div>
+                          <div>
+                            <label className="block text-xs font-medium text-slate-600 mb-1">
+                              SKU <span className="text-slate-400 font-normal">(optional)</span>
+                            </label>
+                            <input
+                              type="text"
+                              value={line.proposed_sku}
+                              onChange={(e) => updateLine(idx, 'proposed_sku', e.target.value)}
+                              placeholder="e.g. CEM-0001"
                               className="w-full px-3 py-2 border border-slate-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-orange-400 transition"
                             />
                           </div>

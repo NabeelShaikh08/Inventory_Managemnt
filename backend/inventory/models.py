@@ -94,6 +94,7 @@ class RequestLine(models.Model):
     proposed_category = models.ForeignKey(
         Category, null=True, blank=True, on_delete=models.PROTECT, related_name='proposed_lines'
     )
+    proposed_sku = models.CharField(max_length=50, blank=True)
     proposed_description = models.TextField(blank=True)
     # Extended fields
     uom = models.CharField(max_length=20, blank=True)

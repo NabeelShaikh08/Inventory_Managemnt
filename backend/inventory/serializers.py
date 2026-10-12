@@ -72,7 +72,7 @@ class RequestLineSerializer(serializers.ModelSerializer):
             'id', 'action',
             'product', 'product_name',
             'quantity', 'unit_cost', 'supplier',
-            'proposed_name', 'proposed_price', 'proposed_stock',
+            'proposed_name', 'proposed_sku', 'proposed_price', 'proposed_stock',
             'proposed_category', 'proposed_category_name', 'proposed_description',
             'uom', 'proposed_uom', 'warehouse_code',
             'subcategory', 'proposed_subcategory',
