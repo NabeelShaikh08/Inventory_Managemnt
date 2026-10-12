@@ -10,10 +10,27 @@ import DeleteConfirmDialog from '../components/DeleteConfirmDialog';
 import BulkProductUpload from '../components/BulkProductUpload';
 import {
   Plus, Search, ChevronLeft, ChevronRight, Pencil, Trash2,
-  RefreshCw, PackageOpen, Filter, X, ArrowUpDown, Upload,
+  RefreshCw, PackageOpen, X, Upload, ChevronUp, ChevronDown,
+  ChevronsUpDown,
 } from 'lucide-react';
 
 const PAGE_SIZE = 10;
+
+// Columns that support server-side ordering
+type SortField = 'name' | 'price' | 'stock' | 'created_at';
+
+function toOrdering(field: SortField, dir: 'asc' | 'desc') {
+  return dir === 'asc' ? field : `-${field}`;
+}
+
+function SortIcon({ field, ordering }: { field: SortField; ordering: string }) {
+  const active = ordering === field || ordering === `-${field}`;
+  const asc = ordering === field;
+  if (!active) return <ChevronsUpDown size={13} className="text-slate-400 ml-1 inline-block" />;
+  return asc
+    ? <ChevronUp size={13} className="text-blue-600 ml-1 inline-block" />
+    : <ChevronDown size={13} className="text-blue-600 ml-1 inline-block" />;
+}
 
 function StatusBadge({ isActive }: { isActive: boolean }) {
   return (
@@ -37,6 +54,20 @@ function SkeletonRow() {
       ))}
     </tr>
   );
+}
+
+// Build a stable pagination sequence: always show first, last, current-1, current, current+1
+// with '…' gaps. Never changes length when navigating within the middle.
+function buildPages(total: number, current: number): (number | '…')[] {
+  if (total <= 7) return Array.from({ length: total }, (_, i) => i + 1);
+  const set = new Set<number>([1, total, current - 1, current, current + 1].filter(n => n >= 1 && n <= total));
+  const sorted = Array.from(set).sort((a, b) => a - b);
+  const result: (number | '…')[] = [];
+  for (let i = 0; i < sorted.length; i++) {
+    if (i > 0 && sorted[i] - sorted[i - 1] > 1) result.push('…');
+    result.push(sorted[i]);
+  }
+  return result;
 }
 
 export default function ProductsPage({ readOnly = false }: { readOnly?: boolean }) {
@@ -70,25 +101,31 @@ export default function ProductsPage({ readOnly = false }: { readOnly?: boolean 
 
   const totalPages = data ? Math.ceil(data.count / PAGE_SIZE) : 1;
 
-  const handleSearchChange = (v: string) => {
-    setSearch(v);
+  const handleSearchChange = (v: string) => { setSearch(v); setPage(1); };
+  const handleCategoryChange = (v: number | '') => { setCategoryFilter(v); setPage(1); };
+  const clearSearch = () => { setSearch(''); setPage(1); };
+  const clearCategory = () => { setCategoryFilter(''); setPage(1); };
+
+  // Column header sort: clicking the same column toggles asc/desc
+  const handleSort = (field: SortField) => {
+    const currentDir = ordering === field ? 'asc' : ordering === `-${field}` ? 'desc' : null;
+    const nextDir = currentDir === 'asc' ? 'desc' : 'asc';
+    setOrdering(toOrdering(field, nextDir));
     setPage(1);
   };
 
-  const handleCategoryChange = (v: number | '') => {
-    setCategoryFilter(v);
-    setPage(1);
+  const thClass = (field: SortField) => {
+    const active = ordering === field || ordering === `-${field}`;
+    return `px-4 py-3 text-left font-semibold select-none cursor-pointer transition ${
+      active ? 'text-blue-600' : 'text-slate-600 hover:text-slate-800'
+    }`;
   };
 
-  const handleOrderingChange = (v: string) => {
-    setOrdering(v);
-    setPage(1);
-  };
+  const activeCategoryName = categoryFilter
+    ? categories.find(c => c.id === categoryFilter)
+    : null;
 
-  const clearSearch = () => {
-    setSearch('');
-    setPage(1);
-  };
+  const hasActiveFilter = !!categoryFilter;
 
   return (
     <div className="min-h-screen bg-slate-50">
@@ -125,9 +162,9 @@ export default function ProductsPage({ readOnly = false }: { readOnly?: boolean 
 
         {/* Filters */}
         <div className="bg-white rounded-xl border border-slate-200 p-4 mb-6 flex flex-col sm:flex-row gap-3">
-          {/* Search with clear button */}
+          {/* Search */}
           <div className="relative flex-1">
-            <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" size={16} />
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none" size={16} />
             <input
               type="text"
               value={search}
@@ -146,42 +183,69 @@ export default function ProductsPage({ readOnly = false }: { readOnly?: boolean 
             )}
           </div>
 
-          {/* Category filter */}
-          <div className="relative sm:w-48">
-            <Filter className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" size={16} />
+          {/* Category filter — entire area is clickable via <label> wrapping the select */}
+          <label
+            className={`relative sm:w-52 flex items-center gap-2 pl-3 pr-3 py-2 border rounded-lg cursor-pointer transition ${
+              hasActiveFilter
+                ? 'border-blue-500 bg-blue-50 ring-2 ring-blue-200'
+                : 'border-slate-300 hover:border-slate-400'
+            }`}
+          >
+            <Search size={0} className="hidden" />
+            {/* Filter funnel icon */}
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              width="15"
+              height="15"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth="2"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              className={`shrink-0 ${hasActiveFilter ? 'text-blue-600' : 'text-slate-400'}`}
+            >
+              <polygon points="22 3 2 3 10 12.46 10 19 14 21 14 12.46 22 3" />
+            </svg>
             <select
               value={categoryFilter}
               onChange={(e) => handleCategoryChange(e.target.value === '' ? '' : Number(e.target.value))}
-              className="w-full pl-9 pr-4 py-2 border border-slate-300 rounded-lg text-sm text-slate-800 focus:outline-none focus:ring-2 focus:ring-blue-500 transition appearance-none"
+              className={`flex-1 bg-transparent text-sm focus:outline-none appearance-none cursor-pointer ${
+                hasActiveFilter ? 'text-blue-700 font-medium' : 'text-slate-800'
+              }`}
             >
               <option value="">All Categories</option>
               {categories.map((c) => (
                 <option key={c.id} value={c.id}>
-                  {c.name}
+                  {c.code} · {c.name}
                 </option>
               ))}
             </select>
-          </div>
-
-          {/* Sort */}
-          <div className="relative sm:w-44">
-            <ArrowUpDown className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" size={15} />
-            <select
-              value={ordering}
-              onChange={(e) => handleOrderingChange(e.target.value)}
-              className="w-full pl-9 pr-4 py-2 border border-slate-300 rounded-lg text-sm text-slate-800 focus:outline-none focus:ring-2 focus:ring-blue-500 transition appearance-none"
-            >
-              <option value="name">Name A–Z</option>
-              <option value="-name">Name Z–A</option>
-              <option value="price">Price: Low–High</option>
-              <option value="-price">Price: High–Low</option>
-              <option value="stock">Stock: Low–High</option>
-              <option value="-stock">Stock: High–Low</option>
-              <option value="-created_at">Newest First</option>
-              <option value="created_at">Oldest First</option>
-            </select>
-          </div>
+            {hasActiveFilter && (
+              <button
+                type="button"
+                onClick={(e) => { e.preventDefault(); clearCategory(); }}
+                className="shrink-0 text-blue-400 hover:text-blue-700 transition"
+                aria-label="Clear category filter"
+              >
+                <X size={14} />
+              </button>
+            )}
+          </label>
         </div>
+
+        {/* Active filter pill */}
+        {hasActiveFilter && activeCategoryName && (
+          <div className="flex items-center gap-2 mb-4">
+            <span className="text-xs text-slate-500">Filtered by:</span>
+            <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-blue-100 text-blue-700 text-xs font-medium">
+              {activeCategoryName.code} · {activeCategoryName.name}
+              <button onClick={clearCategory} className="hover:text-blue-900 transition" aria-label="Remove filter">
+                <X size={12} />
+              </button>
+            </span>
+          </div>
+        )}
 
         {/* Table */}
         <div className="bg-white rounded-xl border border-slate-200 overflow-hidden shadow-sm">
@@ -202,12 +266,23 @@ export default function ProductsPage({ readOnly = false }: { readOnly?: boolean 
                 <table className="w-full text-sm">
                   <thead>
                     <tr className="border-b border-slate-200 bg-slate-50">
-                      <th className="px-4 py-3 text-left font-semibold text-slate-600">Name</th>
+                      <th className={thClass('name')} onClick={() => handleSort('name')}>
+                        Name <SortIcon field="name" ordering={ordering} />
+                      </th>
                       <th className="px-4 py-3 text-left font-semibold text-slate-600">Category</th>
-                      <th className="px-4 py-3 text-right font-semibold text-slate-600">Price (AED)</th>
-                      <th className="px-4 py-3 text-right font-semibold text-slate-600">Stock</th>
+                      <th className={`${thClass('price')} text-right`} onClick={() => handleSort('price')}>
+                        Price (AED) <SortIcon field="price" ordering={ordering} />
+                      </th>
+                      <th className={`${thClass('stock')} text-right`} onClick={() => handleSort('stock')}>
+                        Stock <SortIcon field="stock" ordering={ordering} />
+                      </th>
                       <th className="px-4 py-3 text-center font-semibold text-slate-600">Status</th>
-                      <th className="px-4 py-3 text-left font-semibold text-slate-600 hidden md:table-cell">Added</th>
+                      <th
+                        className={`${thClass('created_at')} hidden md:table-cell`}
+                        onClick={() => handleSort('created_at')}
+                      >
+                        Added <SortIcon field="created_at" ordering={ordering} />
+                      </th>
                       <th className="px-4 py-3 text-center font-semibold text-slate-600">Actions</th>
                     </tr>
                   </thead>
@@ -230,10 +305,7 @@ export default function ProductsPage({ readOnly = false }: { readOnly?: boolean 
                       </tr>
                     ) : (
                       data?.results.map((product) => (
-                        <tr
-                          key={product.id}
-                          className="hover:bg-slate-50 transition"
-                        >
+                        <tr key={product.id} className="hover:bg-slate-50 transition">
                           <td className="px-4 py-3">
                             <div className="font-medium text-slate-800 max-w-[220px] truncate" title={product.name}>
                               {product.name}
@@ -314,30 +386,25 @@ export default function ProductsPage({ readOnly = false }: { readOnly?: boolean 
                       <ChevronLeft size={16} />
                     </button>
 
-                    {Array.from({ length: totalPages }, (_, i) => i + 1)
-                      .filter((p) => p === 1 || p === totalPages || Math.abs(p - page) <= 1)
-                      .reduce<(number | '...')[]>((acc, p, idx, arr) => {
-                        if (idx > 0 && (p as number) - (arr[idx - 1] as number) > 1) acc.push('...');
-                        acc.push(p);
-                        return acc;
-                      }, [])
-                      .map((p, i) =>
-                        p === '...' ? (
-                          <span key={`ellipsis-${i}`} className="px-2 text-slate-400 text-sm">…</span>
-                        ) : (
-                          <button
-                            key={p}
-                            onClick={() => setPage(p as number)}
-                            className={`w-8 h-8 rounded-lg text-sm font-medium transition ${
-                              page === p
-                                ? 'bg-blue-600 text-white'
-                                : 'text-slate-600 hover:bg-slate-200'
-                            }`}
-                          >
-                            {p}
-                          </button>
-                        )
-                      )}
+                    {buildPages(totalPages, page).map((p, i) =>
+                      p === '…' ? (
+                        <span key={`ellipsis-${i}`} className="w-8 h-8 flex items-center justify-center text-slate-400 text-sm">
+                          …
+                        </span>
+                      ) : (
+                        <button
+                          key={p}
+                          onClick={() => setPage(p as number)}
+                          className={`w-8 h-8 rounded-lg text-sm font-medium transition ${
+                            page === p
+                              ? 'bg-blue-600 text-white'
+                              : 'text-slate-600 hover:bg-slate-200'
+                          }`}
+                        >
+                          {p}
+                        </button>
+                      )
+                    )}
 
                     <button
                       onClick={() => setPage((p) => Math.min(totalPages, p + 1))}
