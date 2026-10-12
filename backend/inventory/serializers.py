@@ -74,6 +74,11 @@ class RequestLineSerializer(serializers.ModelSerializer):
             'quantity', 'unit_cost', 'supplier',
             'proposed_name', 'proposed_price', 'proposed_stock',
             'proposed_category', 'proposed_category_name', 'proposed_description',
+            'uom', 'proposed_uom', 'warehouse_code',
+            'subcategory', 'proposed_subcategory',
+            'min_stock', 'proposed_min_stock',
+            'reorder_level', 'proposed_reorder_level',
+            'barcode',
             'line_status', 'rejection_reason',
         ]
         read_only_fields = ['line_status', 'rejection_reason']

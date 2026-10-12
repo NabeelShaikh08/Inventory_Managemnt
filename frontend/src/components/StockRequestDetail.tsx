@@ -122,10 +122,29 @@ export default function StockRequestDetail({ requestId, onClose, canDecide, onDe
                   )}
                   {req.remarks && (
                     <div>
-                      <span className="text-xs text-slate-400 uppercase font-medium">Remarks</span>
+                      <span className="text-xs text-slate-400 uppercase font-medium">
+                        {req.decided_by_username ? 'Checker Remarks' : 'Remarks'}
+                      </span>
                       <p className="text-slate-600 mt-0.5">{req.remarks}</p>
                     </div>
                   )}
+                </div>
+              )}
+
+              {/* Checker decision banner — always visible once decided */}
+              {req.decided_by_username && (
+                <div className={`p-3 rounded-lg border text-sm ${
+                  req.status === 'approved' ? 'bg-green-50 border-green-200' :
+                  req.status === 'rejected' ? 'bg-red-50 border-red-200' :
+                  'bg-blue-50 border-blue-200'
+                }`}>
+                  <p className="text-xs text-slate-500 uppercase font-medium tracking-wide mb-1">Decision by Checker</p>
+                  <p className="text-slate-700">
+                    <span className="font-medium">{req.decided_by_username}</span>
+                    {req.decided_at && (
+                      <span className="text-slate-400"> · {new Date(req.decided_at).toLocaleDateString('en-GB')}</span>
+                    )}
+                  </p>
                 </div>
               )}
 
@@ -163,11 +182,17 @@ export default function StockRequestDetail({ requestId, onClose, canDecide, onDe
                       {line.quantity && (
                         <span>Qty: <span className="text-slate-700 font-medium">{line.quantity}</span></span>
                       )}
+                      {(line.uom || line.proposed_uom) && (
+                        <span>UOM: <span className="text-slate-700 font-medium">{line.uom || line.proposed_uom}</span></span>
+                      )}
                       {line.unit_cost && (
                         <span>Unit cost: <span className="text-slate-700 font-medium">AED {line.unit_cost}</span></span>
                       )}
                       {line.supplier && (
                         <span>Supplier: <span className="text-slate-700 font-medium">{line.supplier}</span></span>
+                      )}
+                      {line.warehouse_code && (
+                        <span>Warehouse: <span className="text-slate-700 font-medium">{line.warehouse_code}</span></span>
                       )}
                       {line.proposed_price && (
                         <span>Price: <span className="text-slate-700 font-medium">AED {line.proposed_price}</span></span>
@@ -177,6 +202,18 @@ export default function StockRequestDetail({ requestId, onClose, canDecide, onDe
                       )}
                       {line.proposed_category_name && (
                         <span>Category: <span className="text-slate-700 font-medium">{line.proposed_category_name}</span></span>
+                      )}
+                      {(line.subcategory || line.proposed_subcategory) && (
+                        <span>Subcategory: <span className="text-slate-700 font-medium">{line.subcategory || line.proposed_subcategory}</span></span>
+                      )}
+                      {(line.min_stock != null || line.proposed_min_stock != null) && (
+                        <span>Min stock: <span className="text-slate-700 font-medium">{line.min_stock ?? line.proposed_min_stock}</span></span>
+                      )}
+                      {(line.reorder_level != null || line.proposed_reorder_level != null) && (
+                        <span>Reorder at: <span className="text-slate-700 font-medium">{line.reorder_level ?? line.proposed_reorder_level}</span></span>
+                      )}
+                      {line.barcode && (
+                        <span>Barcode: <span className="text-slate-700 font-medium">{line.barcode}</span></span>
                       )}
                     </div>
 
@@ -265,14 +302,6 @@ export default function StockRequestDetail({ requestId, onClose, canDecide, onDe
                 </div>
               )}
 
-              {req.decided_by_username && (
-                <div className="text-xs text-slate-400 pt-2">
-                  Approved by <span className="font-medium text-slate-600">{req.decided_by_username}</span>
-                  {req.decided_at && (
-                    <> on {new Date(req.decided_at).toLocaleDateString('en-GB')}</>
-                  )}
-                </div>
-              )}
             </>
           ) : (
             <p className="text-slate-500 text-center py-8">Request not found.</p>

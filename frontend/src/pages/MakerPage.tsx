@@ -1,11 +1,11 @@
 import { useState } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { useNavigate } from 'react-router-dom';
-import { Plus, ChevronLeft, ChevronRight, Eye, XCircle, PackageOpen, RefreshCw } from 'lucide-react';
+import { Plus, ChevronLeft, ChevronRight, Eye, XCircle, PackageOpen, RefreshCw, RotateCcw } from 'lucide-react';
 import Navbar from '../components/Navbar';
 import StockRequestForm from '../components/StockRequestForm';
 import StockRequestDetail from '../components/StockRequestDetail';
-import { listRequests, withdrawRequest } from '../api/requests';
+import { listRequests, withdrawRequest, getRequest } from '../api/requests';
 import type { StockRequest, RequestStatus } from '../types';
 
 const PAGE_SIZE = 10;
@@ -36,6 +36,8 @@ export default function MakerPage() {
   const [page, setPage] = useState(1);
   const [showForm, setShowForm] = useState(false);
   const [viewingId, setViewingId] = useState<number | null>(null);
+  const [resubmitId, setResubmitId] = useState<number | null>(null);
+  const [selectedIds, setSelectedIds] = useState<Set<number>>(new Set());
   const queryClient = useQueryClient();
   const navigate = useNavigate();
 
@@ -45,12 +47,47 @@ export default function MakerPage() {
     placeholderData: (prev) => prev,
   });
 
+  const { data: resubmitFull } = useQuery({
+    queryKey: ['request', resubmitId],
+    queryFn: () => getRequest(resubmitId!),
+    enabled: resubmitId !== null,
+  });
+
   const withdrawMut = useMutation({
     mutationFn: (id: number) => withdrawRequest(id),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['requests'] });
     },
   });
+
+  const pendingResults = data?.results.filter((r) => r.status === 'pending') ?? [];
+  const allPendingSelected =
+    pendingResults.length > 0 && pendingResults.every((r) => selectedIds.has(r.id));
+
+  const toggleSelect = (id: number) => {
+    setSelectedIds((prev) => {
+      const next = new Set(prev);
+      next.has(id) ? next.delete(id) : next.add(id);
+      return next;
+    });
+  };
+
+  const toggleSelectAll = () => {
+    if (allPendingSelected) {
+      setSelectedIds(new Set());
+    } else {
+      setSelectedIds(new Set(pendingResults.map((r) => r.id)));
+    }
+  };
+
+  const handleBulkWithdraw = () => {
+    if (selectedIds.size === 0) return;
+    if (!confirm(`Withdraw ${selectedIds.size} selected request(s)?`)) return;
+    Promise.all([...selectedIds].map((id) => withdrawRequest(id))).then(() => {
+      setSelectedIds(new Set());
+      queryClient.invalidateQueries({ queryKey: ['requests'] });
+    });
+  };
 
   const totalPages = data ? Math.ceil(data.count / PAGE_SIZE) : 1;
 
@@ -66,7 +103,16 @@ export default function MakerPage() {
               Submit requests to add stock or change product details
             </p>
           </div>
-          <div className="flex gap-2">
+          <div className="flex gap-2 flex-wrap">
+            {selectedIds.size > 0 && (
+              <button
+                onClick={handleBulkWithdraw}
+                className="flex items-center gap-2 px-4 py-2.5 border border-red-300 text-red-600 hover:bg-red-50 font-semibold rounded-lg transition"
+              >
+                <XCircle size={16} />
+                Withdraw {selectedIds.size} selected
+              </button>
+            )}
             <button
               onClick={() => navigate('/maker/products')}
               className="flex items-center gap-2 px-4 py-2.5 border border-slate-300 text-slate-600 hover:bg-slate-100 font-semibold rounded-lg transition"
@@ -101,6 +147,16 @@ export default function MakerPage() {
                 <table className="w-full text-sm">
                   <thead>
                     <tr className="border-b border-slate-200 bg-slate-50">
+                      <th className="px-3 py-3 text-center w-10">
+                        <input
+                          type="checkbox"
+                          checked={allPendingSelected}
+                          onChange={toggleSelectAll}
+                          disabled={pendingResults.length === 0}
+                          className="w-4 h-4 accent-orange-500"
+                          title="Select all pending"
+                        />
+                      </th>
                       <th className="px-4 py-3 text-left font-semibold text-slate-600">Ref #</th>
                       <th className="px-4 py-3 text-left font-semibold text-slate-600">Document Ref</th>
                       <th className="px-4 py-3 text-center font-semibold text-slate-600">Articles</th>
@@ -113,7 +169,7 @@ export default function MakerPage() {
                     {isLoading ? (
                       [...Array(5)].map((_, i) => (
                         <tr key={i} className="animate-pulse">
-                          {[...Array(6)].map((_, j) => (
+                          {[...Array(7)].map((_, j) => (
                             <td key={j} className="px-4 py-3">
                               <div className="h-4 bg-slate-200 rounded w-3/4" />
                             </td>
@@ -122,7 +178,7 @@ export default function MakerPage() {
                       ))
                     ) : data?.results.length === 0 ? (
                       <tr>
-                        <td colSpan={6} className="py-16 text-center">
+                        <td colSpan={7} className="py-16 text-center">
                           <div className="flex flex-col items-center gap-3 text-slate-400">
                             <PackageOpen size={40} />
                             <p className="font-medium text-slate-500">No requests yet</p>
@@ -132,7 +188,19 @@ export default function MakerPage() {
                       </tr>
                     ) : (
                       data?.results.map((req: StockRequest) => (
-                        <tr key={req.id} className="hover:bg-slate-50 transition">
+                        <tr key={req.id} className={`hover:bg-slate-50 transition ${selectedIds.has(req.id) ? 'bg-orange-50' : ''}`}>
+                          <td className="px-3 py-3 text-center">
+                            {req.status === 'pending' ? (
+                              <input
+                                type="checkbox"
+                                checked={selectedIds.has(req.id)}
+                                onChange={() => toggleSelect(req.id)}
+                                className="w-4 h-4 accent-orange-500"
+                              />
+                            ) : (
+                              <span />
+                            )}
+                          </td>
                           <td className="px-4 py-3 font-mono text-slate-700">
                             REQ-{String(req.id).padStart(4, '0')}
                           </td>
@@ -168,6 +236,15 @@ export default function MakerPage() {
                                   title="Withdraw request"
                                 >
                                   <XCircle size={15} />
+                                </button>
+                              )}
+                              {req.status === 'withdrawn' && (
+                                <button
+                                  onClick={() => setResubmitId(req.id)}
+                                  className="p-1.5 text-slate-400 hover:text-green-600 hover:bg-green-50 rounded-lg transition"
+                                  title="Re-submit as new request"
+                                >
+                                  <RotateCcw size={15} />
                                 </button>
                               )}
                             </div>
@@ -233,6 +310,18 @@ export default function MakerPage() {
           requestId={viewingId}
           onClose={() => setViewingId(null)}
           canDecide={false}
+        />
+      )}
+
+      {resubmitId !== null && resubmitFull && (
+        <StockRequestForm
+          onClose={() => setResubmitId(null)}
+          onSuccess={() => {
+            setResubmitId(null);
+            queryClient.invalidateQueries({ queryKey: ['requests'] });
+          }}
+          prefillLines={resubmitFull.lines}
+          prefillDocRef={resubmitFull.document_ref}
         />
       )}
     </div>

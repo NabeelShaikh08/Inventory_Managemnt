@@ -95,6 +95,17 @@ class RequestLine(models.Model):
         Category, null=True, blank=True, on_delete=models.PROTECT, related_name='proposed_lines'
     )
     proposed_description = models.TextField(blank=True)
+    # Extended fields
+    uom = models.CharField(max_length=20, blank=True)
+    proposed_uom = models.CharField(max_length=20, blank=True)
+    warehouse_code = models.CharField(max_length=50, default='MAIN-WH')
+    subcategory = models.CharField(max_length=100, blank=True)
+    proposed_subcategory = models.CharField(max_length=100, blank=True)
+    min_stock = models.PositiveIntegerField(null=True, blank=True)
+    proposed_min_stock = models.PositiveIntegerField(null=True, blank=True)
+    reorder_level = models.PositiveIntegerField(null=True, blank=True)
+    proposed_reorder_level = models.PositiveIntegerField(null=True, blank=True)
+    barcode = models.CharField(max_length=100, blank=True)
     # Decision
     line_status = models.CharField(max_length=20, choices=LINE_STATUS_CHOICES, default='pending')
     rejection_reason = models.TextField(blank=True)

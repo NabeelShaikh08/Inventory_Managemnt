@@ -88,6 +88,16 @@ export interface RequestLine {
   proposed_category: number | null;
   proposed_category_name: string | null;
   proposed_description: string;
+  uom: string;
+  proposed_uom: string;
+  warehouse_code: string;
+  subcategory: string;
+  proposed_subcategory: string;
+  min_stock: number | null;
+  proposed_min_stock: number | null;
+  reorder_level: number | null;
+  proposed_reorder_level: number | null;
+  barcode: string;
   line_status: LineStatus;
   rejection_reason: string;
 }
@@ -118,6 +128,16 @@ export interface RequestLineInput {
   proposed_stock?: number;
   proposed_category?: number | null;
   proposed_description?: string;
+  uom?: string;
+  proposed_uom?: string;
+  warehouse_code?: string;
+  subcategory?: string;
+  proposed_subcategory?: string;
+  min_stock?: number;
+  proposed_min_stock?: number;
+  reorder_level?: number;
+  proposed_reorder_level?: number;
+  barcode?: string;
 }
 
 export interface CreateStockRequestInput {

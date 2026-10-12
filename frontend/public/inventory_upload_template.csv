@@ -1,6 +1,6 @@
-action,product_name,quantity,unit_cost,supplier,proposed_name,proposed_price,proposed_stock,category,description
-stock_in,Portland Cement OPC 42.5R,100,28.50,Al Futtaim Building Materials,,,,,
-stock_in,River Sand (Fine Grade),200,8.00,Emirates Sand Co,,,,,
-new_product,,,,,High-Strength Rebar 16mm,12.00,500,Steel & Rebar,Deformed steel bar for structural use
-new_product,,,,,Ceramic Floor Tile 60x60,45.00,300,Tiles & Flooring,Polished ceramic tile for commercial use
-edit_product,Portland Cement OPC 42.5R,,,,,32.00,,,Updated price to reflect supplier increase
+action,product_name,quantity,unit_cost,supplier,uom,proposed_name,proposed_price,proposed_stock,category,description,subcategory,min_stock,reorder_level,barcode
+stock_in,Portland Cement OPC 42.5R,100,28.50,Al Futtaim Building Materials,BAG,,,,,,,,,
+stock_in,River Sand (Fine Grade),200,8.00,Emirates Sand Co,M3,,,,,,,,,
+new_product,,,,,BAG,High-Strength Rebar 16mm,12.00,500,Steel & Rebar,Deformed steel bar for structural use,Reinforcement,100,150,
+new_product,,,,,PCS,Ceramic Floor Tile 60x60,45.00,300,Tiles & Flooring,Polished ceramic tile for commercial use,Floor Tiles,50,80,
+edit_product,Portland Cement OPC 42.5R,,,,, ,32.00,,,Updated price to reflect supplier increase,,,,
