@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { useNavigate } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
 import { Eye, ChevronLeft, ChevronRight, PackageOpen, RefreshCw } from 'lucide-react';
 import Navbar from '../components/Navbar';
 import StockRequestDetail from '../components/StockRequestDetail';
@@ -10,6 +11,7 @@ import type { StockRequest, RequestStatus } from '../types';
 const PAGE_SIZE = 10;
 
 function StatusBadge({ status }: { status: RequestStatus }) {
+  const { t } = useTranslation();
   const map: Record<RequestStatus, string> = {
     pending: 'bg-yellow-100 text-yellow-700',
     approved: 'bg-green-100 text-green-700',
@@ -18,11 +20,11 @@ function StatusBadge({ status }: { status: RequestStatus }) {
     withdrawn: 'bg-slate-100 text-slate-500',
   };
   const labels: Record<RequestStatus, string> = {
-    pending: 'Pending',
-    approved: 'Approved',
-    partially_approved: 'Partial',
-    rejected: 'Rejected',
-    withdrawn: 'Withdrawn',
+    pending: t('status.pending'),
+    approved: t('status.approved'),
+    partially_approved: t('status.partially_approved'),
+    rejected: t('status.rejected'),
+    withdrawn: t('status.withdrawn'),
   };
   return (
     <span className={`inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium ${map[status]}`}>
@@ -32,6 +34,7 @@ function StatusBadge({ status }: { status: RequestStatus }) {
 }
 
 export default function CheckerPage() {
+  const { t } = useTranslation();
   const [page, setPage] = useState(1);
   const [viewingId, setViewingId] = useState<number | null>(null);
   const queryClient = useQueryClient();
@@ -53,31 +56,31 @@ export default function CheckerPage() {
       <main className="max-w-7xl mx-auto px-4 sm:px-6 py-8">
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6">
           <div>
-            <h2 className="text-2xl font-bold text-slate-800">Approval Queue</h2>
+            <h2 className="text-2xl font-bold text-slate-800">{t('checkerPage.title')}</h2>
             <p className="text-slate-500 text-sm mt-0.5">
               {pendingCount > 0
-                ? `${pendingCount} request${pendingCount > 1 ? 's' : ''} awaiting your decision`
-                : 'All caught up — no pending requests'}
+                ? t('checkerPage.subtitle', { count: pendingCount })
+                : t('checkerPage.allCaughtUp')}
             </p>
           </div>
           <button
             onClick={() => navigate('/checker/products')}
             className="flex items-center gap-2 px-4 py-2.5 border border-slate-300 text-slate-600 hover:bg-slate-100 font-semibold rounded-lg transition"
           >
-            View Inventory
+            {t('checkerPage.viewInventory')}
           </button>
         </div>
 
         <div className="bg-white rounded-xl border border-slate-200 overflow-hidden shadow-sm">
           {isError ? (
             <div className="flex flex-col items-center justify-center py-16 gap-4">
-              <p className="text-slate-500">Failed to load requests.</p>
+              <p className="text-slate-500">{t('checkerPage.failedToLoad')}</p>
               <button
                 onClick={() => refetch()}
                 className="flex items-center gap-2 px-4 py-2 border border-slate-300 rounded-lg text-sm hover:bg-slate-50 transition"
               >
                 <RefreshCw size={16} />
-                Retry
+                {t('checkerPage.retry')}
               </button>
             </div>
           ) : (
@@ -86,13 +89,13 @@ export default function CheckerPage() {
                 <table className="w-full text-sm">
                   <thead>
                     <tr className="border-b border-slate-200 bg-slate-50">
-                      <th className="px-4 py-3 text-left font-semibold text-slate-600">Ref #</th>
-                      <th className="px-4 py-3 text-left font-semibold text-slate-600">Submitted By</th>
-                      <th className="px-4 py-3 text-left font-semibold text-slate-600">Document Ref</th>
-                      <th className="px-4 py-3 text-center font-semibold text-slate-600">Lines</th>
-                      <th className="px-4 py-3 text-center font-semibold text-slate-600">Status</th>
-                      <th className="px-4 py-3 text-left font-semibold text-slate-600">Date</th>
-                      <th className="px-4 py-3 text-center font-semibold text-slate-600">Actions</th>
+                      <th className="px-4 py-3 text-left font-semibold text-slate-600">{t('checkerPage.headers.ref')}</th>
+                      <th className="px-4 py-3 text-left font-semibold text-slate-600">{t('checkerPage.headers.submittedBy')}</th>
+                      <th className="px-4 py-3 text-left font-semibold text-slate-600">{t('checkerPage.headers.documentRef')}</th>
+                      <th className="px-4 py-3 text-center font-semibold text-slate-600">{t('checkerPage.headers.articles')}</th>
+                      <th className="px-4 py-3 text-center font-semibold text-slate-600">{t('checkerPage.headers.status')}</th>
+                      <th className="px-4 py-3 text-left font-semibold text-slate-600">{t('checkerPage.headers.date')}</th>
+                      <th className="px-4 py-3 text-center font-semibold text-slate-600">{t('checkerPage.headers.actions')}</th>
                     </tr>
                   </thead>
                   <tbody className="divide-y divide-slate-100">
@@ -111,7 +114,7 @@ export default function CheckerPage() {
                         <td colSpan={7} className="py-16 text-center">
                           <div className="flex flex-col items-center gap-3 text-slate-400">
                             <PackageOpen size={40} />
-                            <p className="font-medium text-slate-500">No requests found</p>
+                            <p className="font-medium text-slate-500">{t('checkerPage.empty.heading')}</p>
                           </div>
                         </td>
                       </tr>
@@ -149,7 +152,7 @@ export default function CheckerPage() {
                                   ? 'text-[#ED7E07] hover:bg-orange-50'
                                   : 'text-slate-400 hover:text-blue-600 hover:bg-blue-50'
                               }`}
-                              title={req.status === 'pending' ? 'Review & decide' : 'View details'}
+                              title={req.status === 'pending' ? t('checkerPage.tooltips.review') : t('checkerPage.tooltips.view')}
                             >
                               <Eye size={15} />
                             </button>
@@ -164,7 +167,7 @@ export default function CheckerPage() {
               {data && data.count > PAGE_SIZE && (
                 <div className="flex items-center justify-between px-4 py-3 border-t border-slate-200 bg-slate-50">
                   <p className="text-xs text-slate-500">
-                    Showing {(page - 1) * PAGE_SIZE + 1}–{Math.min(page * PAGE_SIZE, data.count)} of {data.count}
+                    {t('checkerPage.showing', { start: (page - 1) * PAGE_SIZE + 1, end: Math.min(page * PAGE_SIZE, data.count), total: data.count })}
                   </p>
                   <div className="flex items-center gap-1">
                     <button

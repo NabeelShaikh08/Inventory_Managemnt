@@ -1,5 +1,6 @@
 import { useState, useRef } from 'react';
 import { useMutation, useQueryClient, useQuery } from '@tanstack/react-query';
+import { useTranslation } from 'react-i18next';
 import { X, Upload, AlertCircle, CheckCircle2 } from 'lucide-react';
 import { createProduct } from '../api/products';
 import { getCategories } from '../api/categories';
@@ -40,19 +41,8 @@ function parseCsv(text: string): CsvRow[] {
   });
 }
 
-function validateRows(rows: CsvRow[]): CsvRow[] {
-  return rows.map((r) => {
-    if (!r.name) return { ...r, error: 'Name is required' };
-    if (!r.price || isNaN(parseFloat(r.price)) || parseFloat(r.price) <= 0)
-      return { ...r, error: 'Price must be > 0' };
-    if (r.stock !== '' && (isNaN(parseInt(r.stock)) || parseInt(r.stock) < 0))
-      return { ...r, error: 'Stock must be ≥ 0' };
-    if (!r.category) return { ...r, error: 'Category is required' };
-    return r;
-  });
-}
-
 export default function BulkProductUpload({ onClose }: Props) {
+  const { t } = useTranslation();
   const queryClient = useQueryClient();
   const [csvText, setCsvText] = useState('');
   const [rows, setRows] = useState<CsvRow[]>([]);
@@ -69,6 +59,17 @@ export default function BulkProductUpload({ onClose }: Props) {
 
   const createMut = useMutation({ mutationFn: createProduct });
 
+  const validateRows = (rawRows: CsvRow[]): CsvRow[] =>
+    rawRows.map((r) => {
+      if (!r.name) return { ...r, error: t('bulkUpload.errors.nameRequired') };
+      if (!r.price || isNaN(parseFloat(r.price)) || parseFloat(r.price) <= 0)
+        return { ...r, error: t('bulkUpload.errors.priceGtZero') };
+      if (r.stock !== '' && (isNaN(parseInt(r.stock)) || parseInt(r.stock) < 0))
+        return { ...r, error: t('bulkUpload.errors.stockNegative') };
+      if (!r.category) return { ...r, error: t('bulkUpload.errors.categoryRequired') };
+      return r;
+    });
+
   const handleFileUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
@@ -83,8 +84,8 @@ export default function BulkProductUpload({ onClose }: Props) {
   };
 
   const handleParse = () => {
-    const parsed = validateRows(parseCsv(csvText));
-    setRows(parsed);
+    const validated = validateRows(parseCsv(csvText));
+    setRows(validated);
     setParsed(true);
   };
 
@@ -100,7 +101,7 @@ export default function BulkProductUpload({ onClose }: Props) {
         (c) => c.name.toLowerCase() === row.category.toLowerCase()
       );
       if (!matchedCat) {
-        results.push({ ...row, error: `Category "${row.category}" not found` });
+        results.push({ ...row, error: t('bulkUpload.errors.categoryNotFound', { name: row.category }) });
         continue;
       }
       const payload: ProductFormData = {
@@ -115,7 +116,7 @@ export default function BulkProductUpload({ onClose }: Props) {
         await createMut.mutateAsync(payload);
         results.push({ ...row, done: true });
       } catch {
-        results.push({ ...row, error: 'API error — check name/price uniqueness' });
+        results.push({ ...row, error: t('bulkUpload.errors.apiError') });
       }
     }
     setImportResults(results);
@@ -132,7 +133,7 @@ export default function BulkProductUpload({ onClose }: Props) {
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-4">
       <div className="bg-white rounded-2xl shadow-2xl w-full max-w-2xl max-h-[90vh] flex flex-col">
         <div className="flex items-center justify-between p-4 sm:p-6 border-b border-slate-200">
-          <h2 className="text-lg font-bold text-slate-800">Bulk Product Import (CSV)</h2>
+          <h2 className="text-lg font-bold text-slate-800">{t('bulkUpload.title')}</h2>
           <button
             onClick={onClose}
             className="p-1.5 text-slate-400 hover:text-slate-600 hover:bg-slate-100 rounded-lg transition"
@@ -144,38 +145,36 @@ export default function BulkProductUpload({ onClose }: Props) {
         <div className="p-4 sm:p-6 overflow-y-auto flex-1 space-y-4">
           {!done ? (
             <>
-              {/* Format hint */}
               <div className="flex items-start gap-3 p-3 bg-blue-50 border border-blue-200 rounded-lg text-sm text-blue-700">
                 <AlertCircle size={16} className="mt-0.5 shrink-0" />
                 <div className="space-y-1">
-                  <p className="font-medium">CSV Format (Admin Direct Import)</p>
+                  <p className="font-medium">{t('bulkUpload.csvFormatTitle')}</p>
                   <p className="text-xs text-blue-600">
-                    Columns: <code className="font-mono">{ADMIN_CSV_COLUMNS}</code>
+                    {t('bulkUpload.csvColumns')} <code className="font-mono">{ADMIN_CSV_COLUMNS}</code>
                   </p>
                   <p className="text-xs text-blue-600">
-                    <code className="font-mono">is_active</code>: <code className="font-mono">true</code> or <code className="font-mono">false</code> (defaults to true)
+                    {t('bulkUpload.csvIsActive')}
                   </p>
                   <a
                     href="/inventory_upload_template.csv"
                     download="inventory_upload_template.csv"
                     className="inline-flex items-center gap-1 text-xs font-medium text-blue-700 hover:underline"
                   >
-                    Download template CSV
+                    {t('bulkUpload.downloadTemplate')}
                   </a>
                 </div>
               </div>
 
-              {/* File + paste */}
               <div>
                 <div className="flex items-center gap-3 mb-2">
-                  <label className="text-sm font-medium text-slate-700">Upload or paste CSV</label>
+                  <label className="text-sm font-medium text-slate-700">{t('bulkUpload.uploadOrPaste')}</label>
                   <button
                     type="button"
                     onClick={() => fileInputRef.current?.click()}
                     className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium border border-slate-300 rounded-lg hover:bg-slate-50 transition text-slate-600"
                   >
                     <Upload size={13} />
-                    Choose file
+                    {t('bulkUpload.chooseFile')}
                   </button>
                   <input
                     ref={fileInputRef}
@@ -200,29 +199,28 @@ export default function BulkProductUpload({ onClose }: Props) {
                 disabled={!csvText.trim()}
                 className="px-4 py-2 text-sm font-medium bg-slate-100 hover:bg-slate-200 disabled:opacity-40 rounded-lg transition"
               >
-                Parse &amp; Preview
+                {t('bulkUpload.parsePreview')}
               </button>
 
-              {/* Preview table */}
               {parsed && rows.length > 0 && (
                 <div className="space-y-2">
                   <p className="text-sm font-medium text-slate-700">
-                    {rows.length} row{rows.length !== 1 ? 's' : ''} parsed
+                    {t('bulkUpload.rowsParsed', { count: rows.length })}
                     {hasErrors && (
-                      <span className="ml-2 text-red-500 font-normal">— fix errors before importing</span>
+                      <span className="ms-2 text-red-500 font-normal">{t('bulkUpload.fixErrors')}</span>
                     )}
                   </p>
                   <div className="overflow-x-auto border border-slate-200 rounded-lg">
                     <table className="w-full text-xs">
                       <thead className="bg-slate-50 border-b border-slate-200">
                         <tr>
-                          <th className="px-3 py-2 text-left text-slate-500 font-medium">#</th>
-                          <th className="px-3 py-2 text-left text-slate-500 font-medium">Name</th>
-                          <th className="px-3 py-2 text-right text-slate-500 font-medium">Price</th>
-                          <th className="px-3 py-2 text-right text-slate-500 font-medium">Stock</th>
-                          <th className="px-3 py-2 text-left text-slate-500 font-medium">Category</th>
-                          <th className="px-3 py-2 text-center text-slate-500 font-medium">Active</th>
-                          <th className="px-3 py-2 text-left text-slate-500 font-medium">Status</th>
+                          <th className="px-3 py-2 text-left text-slate-500 font-medium">{t('bulkUpload.headers.num')}</th>
+                          <th className="px-3 py-2 text-left text-slate-500 font-medium">{t('bulkUpload.headers.name')}</th>
+                          <th className="px-3 py-2 text-right text-slate-500 font-medium">{t('bulkUpload.headers.price')}</th>
+                          <th className="px-3 py-2 text-right text-slate-500 font-medium">{t('bulkUpload.headers.stock')}</th>
+                          <th className="px-3 py-2 text-left text-slate-500 font-medium">{t('bulkUpload.headers.category')}</th>
+                          <th className="px-3 py-2 text-center text-slate-500 font-medium">{t('bulkUpload.headers.active')}</th>
+                          <th className="px-3 py-2 text-left text-slate-500 font-medium">{t('bulkUpload.headers.status')}</th>
                         </tr>
                       </thead>
                       <tbody className="divide-y divide-slate-100">
@@ -235,7 +233,7 @@ export default function BulkProductUpload({ onClose }: Props) {
                             <td className="px-3 py-2 text-slate-600">{row.category || '—'}</td>
                             <td className="px-3 py-2 text-center">
                               <span className={row.is_active.toLowerCase() === 'false' ? 'text-slate-400' : 'text-green-600'}>
-                                {row.is_active.toLowerCase() === 'false' ? 'No' : 'Yes'}
+                                {row.is_active.toLowerCase() === 'false' ? t('bulkUpload.no') : t('bulkUpload.yes')}
                               </span>
                             </td>
                             <td className="px-3 py-2">
@@ -254,16 +252,15 @@ export default function BulkProductUpload({ onClose }: Props) {
               )}
 
               {parsed && rows.length === 0 && (
-                <p className="text-sm text-slate-400">No data rows found.</p>
+                <p className="text-sm text-slate-400">{t('bulkUpload.empty')}</p>
               )}
             </>
           ) : (
-            /* Import results */
             <div className="space-y-4">
               <div className="flex items-center gap-3">
                 <CheckCircle2 size={20} className="text-green-500" />
                 <p className="text-sm font-medium text-slate-700">
-                  Import complete — {successCount} succeeded, {failCount} failed
+                  {t('bulkUpload.importResult', { success: successCount, fail: failCount })}
                 </p>
               </div>
               {failCount > 0 && (
@@ -271,9 +268,9 @@ export default function BulkProductUpload({ onClose }: Props) {
                   <table className="w-full text-xs">
                     <thead className="bg-slate-50 border-b border-slate-200">
                       <tr>
-                        <th className="px-3 py-2 text-left text-slate-500 font-medium">#</th>
-                        <th className="px-3 py-2 text-left text-slate-500 font-medium">Name</th>
-                        <th className="px-3 py-2 text-left text-slate-500 font-medium">Result</th>
+                        <th className="px-3 py-2 text-left text-slate-500 font-medium">{t('bulkUpload.headers.num')}</th>
+                        <th className="px-3 py-2 text-left text-slate-500 font-medium">{t('bulkUpload.headers.name')}</th>
+                        <th className="px-3 py-2 text-left text-slate-500 font-medium">{t('bulkUpload.headers.status')}</th>
                       </tr>
                     </thead>
                     <tbody className="divide-y divide-slate-100">
@@ -285,7 +282,7 @@ export default function BulkProductUpload({ onClose }: Props) {
                             {row.error ? (
                               <span className="text-red-500 font-medium">{row.error}</span>
                             ) : (
-                              <span className="text-green-600 font-medium">Imported</span>
+                              <span className="text-green-600 font-medium">{t('bulkUpload.yes')}</span>
                             )}
                           </td>
                         </tr>
@@ -304,7 +301,7 @@ export default function BulkProductUpload({ onClose }: Props) {
             onClick={onClose}
             className="px-4 py-2.5 text-sm font-medium text-slate-600 hover:bg-slate-100 rounded-lg transition"
           >
-            {done ? 'Close' : 'Cancel'}
+            {done ? t('bulkUpload.close') : t('bulkUpload.cancel')}
           </button>
           {!done && (
             <button
@@ -313,7 +310,7 @@ export default function BulkProductUpload({ onClose }: Props) {
               disabled={!parsed || hasErrors || rows.length === 0 || importing}
               className="px-6 py-2.5 bg-[#ED7E07] hover:bg-[#d06d06] disabled:bg-orange-300 text-white font-semibold rounded-lg transition"
             >
-              {importing ? 'Importing…' : `Import ${rows.filter((r) => !r.error).length} Products`}
+              {importing ? t('bulkUpload.importing') : t('bulkUpload.import', { count: rows.filter((r) => !r.error).length })}
             </button>
           )}
         </div>

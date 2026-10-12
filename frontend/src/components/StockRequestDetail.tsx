@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { useQuery, useMutation } from '@tanstack/react-query';
+import { useTranslation } from 'react-i18next';
 import { X, CheckCircle, XCircle, Loader2 } from 'lucide-react';
 import { getRequest, decideRequest } from '../api/requests';
 import type { LineStatus, RequestLine, DecideRequestInput } from '../types';
@@ -12,6 +13,7 @@ interface Props {
 }
 
 function LineBadge({ status }: { status: LineStatus }) {
+  const { t } = useTranslation();
   const map: Record<LineStatus, string> = {
     pending: 'bg-yellow-100 text-yellow-700',
     approved: 'bg-green-100 text-green-700',
@@ -19,19 +21,13 @@ function LineBadge({ status }: { status: LineStatus }) {
   };
   return (
     <span className={`inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium ${map[status]}`}>
-      {status.charAt(0).toUpperCase() + status.slice(1)}
+      {t(`requestDetail.lineStatus.${status}`)}
     </span>
   );
 }
 
-function actionLabel(action: string) {
-  if (action === 'stock_in') return 'Stock In';
-  if (action === 'new_product') return 'New Product';
-  if (action === 'edit_product') return 'Edit Product';
-  return action;
-}
-
 export default function StockRequestDetail({ requestId, onClose, canDecide, onDecided }: Props) {
+  const { t } = useTranslation();
   const [decisions, setDecisions] = useState<Record<number, { decision: 'approved' | 'rejected'; reason: string }>>({});
   const [checkerRemarks, setCheckerRemarks] = useState('');
   const [serverError, setServerError] = useState('');
@@ -87,11 +83,11 @@ export default function StockRequestDetail({ requestId, onClose, canDecide, onDe
         <div className="flex items-center justify-between p-4 sm:p-6 border-b border-slate-200">
           <div>
             <h2 className="text-lg font-bold text-slate-800">
-              {isLoading ? 'Loading…' : `REQ-${String(req?.id ?? 0).padStart(4, '0')}`}
+              {isLoading ? t('requestDetail.loading') : `REQ-${String(req?.id ?? 0).padStart(4, '0')}`}
             </h2>
             {req && (
               <p className="text-sm text-slate-500 mt-0.5">
-                Submitted by <span className="font-medium text-slate-700">{req.created_by_username}</span>
+                {t('requestDetail.submittedBy')} <span className="font-medium text-slate-700">{req.created_by_username}</span>
                 {' · '}
                 {new Date(req.created_at).toLocaleString('en-GB', { day:'2-digit', month:'2-digit', year:'numeric', hour:'2-digit', minute:'2-digit' })}
               </p>
@@ -116,14 +112,14 @@ export default function StockRequestDetail({ requestId, onClose, canDecide, onDe
                 <div className="grid grid-cols-2 gap-4 text-sm">
                   {req.document_ref && (
                     <div>
-                      <span className="text-xs text-slate-400 uppercase font-medium">Document Ref</span>
+                      <span className="text-xs text-slate-400 uppercase font-medium">{t('requestDetail.documentRef')}</span>
                       <p className="font-medium text-slate-700 mt-0.5">{req.document_ref}</p>
                     </div>
                   )}
                   {req.remarks && (
                     <div>
                       <span className="text-xs text-slate-400 uppercase font-medium">
-                        {req.decided_by_username ? 'Checker Remarks' : 'Remarks'}
+                        {req.decided_by_username ? t('requestDetail.checkerRemarks') : t('requestDetail.remarks')}
                       </span>
                       <p className="text-slate-600 mt-0.5">{req.remarks}</p>
                     </div>
@@ -138,7 +134,7 @@ export default function StockRequestDetail({ requestId, onClose, canDecide, onDe
                   req.status === 'rejected' ? 'bg-red-50 border-red-200' :
                   'bg-blue-50 border-blue-200'
                 }`}>
-                  <p className="text-xs text-slate-500 uppercase font-medium tracking-wide mb-1">Decision by Checker</p>
+                  <p className="text-xs text-slate-500 uppercase font-medium tracking-wide mb-1">{t('requestDetail.decisionByChecker')}</p>
                   <p className="text-slate-700">
                     <span className="font-medium">{req.decided_by_username}</span>
                     {req.decided_at && (
@@ -150,7 +146,7 @@ export default function StockRequestDetail({ requestId, onClose, canDecide, onDe
 
               <div className="space-y-3">
                 <h3 className="font-semibold text-slate-700 text-sm">
-                  Articles ({req.lines.length})
+                  {t('requestDetail.articles', { count: req.lines.length })}
                 </h3>
                 {req.lines.map((line: RequestLine) => (
                   <div
@@ -166,7 +162,7 @@ export default function StockRequestDetail({ requestId, onClose, canDecide, onDe
                     <div className="flex items-start justify-between gap-2 mb-2">
                       <div>
                         <span className="text-xs font-semibold text-slate-500 uppercase tracking-wide">
-                          {actionLabel(line.action)}
+                          {t(`requestDetail.actions.${line.action}`, line.action)}
                         </span>
                         {line.product_name && (
                           <p className="font-medium text-slate-800 mt-0.5">{line.product_name}</p>
@@ -180,40 +176,40 @@ export default function StockRequestDetail({ requestId, onClose, canDecide, onDe
 
                     <div className="flex flex-wrap gap-x-6 gap-y-1 text-xs text-slate-500 mt-1">
                       {line.quantity && (
-                        <span>Qty: <span className="text-slate-700 font-medium">{line.quantity}</span></span>
+                        <span>{t('requestDetail.fields.qty')}: <span className="text-slate-700 font-medium">{line.quantity}</span></span>
                       )}
                       {(line.uom || line.proposed_uom) && (
-                        <span>UOM: <span className="text-slate-700 font-medium">{line.uom || line.proposed_uom}</span></span>
+                        <span>{t('requestDetail.fields.uom')}: <span className="text-slate-700 font-medium">{line.uom || line.proposed_uom}</span></span>
                       )}
                       {line.unit_cost && (
-                        <span>Unit cost: <span className="text-slate-700 font-medium">AED {line.unit_cost}</span></span>
+                        <span>{t('requestDetail.fields.unitCost')}: <span className="text-slate-700 font-medium">AED {line.unit_cost}</span></span>
                       )}
                       {line.supplier && (
-                        <span>Supplier: <span className="text-slate-700 font-medium">{line.supplier}</span></span>
+                        <span>{t('requestDetail.fields.supplier')}: <span className="text-slate-700 font-medium">{line.supplier}</span></span>
                       )}
                       {line.warehouse_code && (
-                        <span>Warehouse: <span className="text-slate-700 font-medium">{line.warehouse_code}</span></span>
+                        <span>{t('requestDetail.fields.warehouse')}: <span className="text-slate-700 font-medium">{line.warehouse_code}</span></span>
                       )}
                       {line.proposed_price && (
-                        <span>Price: <span className="text-slate-700 font-medium">AED {line.proposed_price}</span></span>
+                        <span>{t('requestDetail.fields.price')}: <span className="text-slate-700 font-medium">AED {line.proposed_price}</span></span>
                       )}
                       {line.proposed_stock !== null && line.proposed_stock !== undefined && (
-                        <span>Stock: <span className="text-slate-700 font-medium">{line.proposed_stock}</span></span>
+                        <span>{t('requestDetail.fields.stock')}: <span className="text-slate-700 font-medium">{line.proposed_stock}</span></span>
                       )}
                       {line.proposed_category_name && (
-                        <span>Category: <span className="text-slate-700 font-medium">{line.proposed_category_name}</span></span>
+                        <span>{t('requestDetail.fields.category')}: <span className="text-slate-700 font-medium">{line.proposed_category_name}</span></span>
                       )}
                       {(line.subcategory || line.proposed_subcategory) && (
-                        <span>Subcategory: <span className="text-slate-700 font-medium">{line.subcategory || line.proposed_subcategory}</span></span>
+                        <span>{t('requestDetail.fields.subcategory')}: <span className="text-slate-700 font-medium">{line.subcategory || line.proposed_subcategory}</span></span>
                       )}
                       {(line.min_stock != null || line.proposed_min_stock != null) && (
-                        <span>Min stock: <span className="text-slate-700 font-medium">{line.min_stock ?? line.proposed_min_stock}</span></span>
+                        <span>{t('requestDetail.fields.minStock')}: <span className="text-slate-700 font-medium">{line.min_stock ?? line.proposed_min_stock}</span></span>
                       )}
                       {(line.reorder_level != null || line.proposed_reorder_level != null) && (
-                        <span>Reorder at: <span className="text-slate-700 font-medium">{line.reorder_level ?? line.proposed_reorder_level}</span></span>
+                        <span>{t('requestDetail.fields.reorderAt')}: <span className="text-slate-700 font-medium">{line.reorder_level ?? line.proposed_reorder_level}</span></span>
                       )}
                       {line.barcode && (
-                        <span>Barcode: <span className="text-slate-700 font-medium">{line.barcode}</span></span>
+                        <span>{t('requestDetail.fields.barcode')}: <span className="text-slate-700 font-medium">{line.barcode}</span></span>
                       )}
                     </div>
 
@@ -223,7 +219,7 @@ export default function StockRequestDetail({ requestId, onClose, canDecide, onDe
 
                     {line.rejection_reason && (
                       <p className="text-xs text-red-500 mt-1">
-                        Reason: {line.rejection_reason}
+                        {t('requestDetail.fields.reason')}: {line.rejection_reason}
                       </p>
                     )}
 
@@ -240,7 +236,7 @@ export default function StockRequestDetail({ requestId, onClose, canDecide, onDe
                             }`}
                           >
                             <CheckCircle size={13} />
-                            Approve
+                            {t('requestDetail.approve')}
                           </button>
                           <button
                             type="button"
@@ -252,7 +248,7 @@ export default function StockRequestDetail({ requestId, onClose, canDecide, onDe
                             }`}
                           >
                             <XCircle size={13} />
-                            Reject
+                            {t('requestDetail.reject')}
                           </button>
                         </div>
                         {decisions[line.id]?.decision === 'rejected' && (
@@ -260,7 +256,7 @@ export default function StockRequestDetail({ requestId, onClose, canDecide, onDe
                             type="text"
                             value={decisions[line.id]?.reason ?? ''}
                             onChange={(e) => setLineReason(line.id, e.target.value)}
-                            placeholder="Reason for rejection (optional)"
+                            placeholder={t('requestDetail.rejectionReasonPlaceholder')}
                             className="w-full px-3 py-1.5 text-xs border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-red-300 transition"
                           />
                         )}
@@ -274,13 +270,13 @@ export default function StockRequestDetail({ requestId, onClose, canDecide, onDe
                 <div className="space-y-3 pt-2">
                   <div>
                     <label className="block text-sm font-medium text-slate-700 mb-1">
-                      Approval Remarks <span className="text-slate-400 font-normal">(optional)</span>
+                      {t('requestDetail.approvalRemarksOptional')}
                     </label>
                     <textarea
                       value={checkerRemarks}
                       onChange={(e) => setCheckerRemarks(e.target.value)}
                       rows={2}
-                      placeholder="Any notes for the maker…"
+                      placeholder={t('requestDetail.approvalRemarksPlaceholder')}
                       className="w-full px-3 py-2 border border-slate-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-orange-400 transition resize-none"
                     />
                   </div>
@@ -297,14 +293,14 @@ export default function StockRequestDetail({ requestId, onClose, canDecide, onDe
                     disabled={!allPendingDecided || decideMut.isPending}
                     className="w-full py-2.5 bg-[#ED7E07] hover:bg-[#d06d06] disabled:bg-orange-200 text-white font-semibold rounded-lg transition"
                   >
-                    {decideMut.isPending ? 'Submitting…' : 'Submit Approval'}
+                    {decideMut.isPending ? t('requestDetail.submitting') : t('requestDetail.submitApproval')}
                   </button>
                 </div>
               )}
 
             </>
           ) : (
-            <p className="text-slate-500 text-center py-8">Request not found.</p>
+            <p className="text-slate-500 text-center py-8">{t('requestDetail.notFound')}</p>
           )}
         </div>
 
@@ -313,7 +309,7 @@ export default function StockRequestDetail({ requestId, onClose, canDecide, onDe
             onClick={onClose}
             className="px-4 py-2 text-sm font-medium text-slate-600 hover:bg-slate-100 rounded-lg transition"
           >
-            Close
+            {t('requestDetail.close')}
           </button>
         </div>
       </div>

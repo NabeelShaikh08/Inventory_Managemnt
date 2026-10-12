@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { useNavigate } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
 import { Plus, ChevronLeft, ChevronRight, Eye, XCircle, PackageOpen, RefreshCw, Pencil } from 'lucide-react';
 import Navbar from '../components/Navbar';
 import StockRequestForm from '../components/StockRequestForm';
@@ -11,6 +12,7 @@ import type { StockRequest, RequestStatus } from '../types';
 const PAGE_SIZE = 10;
 
 function StatusBadge({ status }: { status: RequestStatus }) {
+  const { t } = useTranslation();
   const map: Record<RequestStatus, string> = {
     pending: 'bg-yellow-100 text-yellow-700',
     approved: 'bg-green-100 text-green-700',
@@ -19,11 +21,11 @@ function StatusBadge({ status }: { status: RequestStatus }) {
     withdrawn: 'bg-slate-100 text-slate-500',
   };
   const labels: Record<RequestStatus, string> = {
-    pending: 'Pending',
-    approved: 'Approved',
-    partially_approved: 'Partial',
-    rejected: 'Rejected',
-    withdrawn: 'Withdrawn',
+    pending: t('status.pending'),
+    approved: t('status.approved'),
+    partially_approved: t('status.partially_approved'),
+    rejected: t('status.rejected'),
+    withdrawn: t('status.withdrawn'),
   };
   return (
     <span className={`inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium ${map[status]}`}>
@@ -33,6 +35,7 @@ function StatusBadge({ status }: { status: RequestStatus }) {
 }
 
 export default function MakerPage() {
+  const { t } = useTranslation();
   const [page, setPage] = useState(1);
   const [showForm, setShowForm] = useState(false);
   const [viewingId, setViewingId] = useState<number | null>(null);
@@ -82,7 +85,7 @@ export default function MakerPage() {
 
   const handleBulkWithdraw = () => {
     if (selectedIds.size === 0) return;
-    if (!confirm(`Withdraw ${selectedIds.size} selected request(s)?`)) return;
+    if (!confirm(t('makerPage.withdrawSelected', { count: selectedIds.size }))) return;
     Promise.all([...selectedIds].map((id) => withdrawRequest(id))).then(() => {
       setSelectedIds(new Set());
       queryClient.invalidateQueries({ queryKey: ['requests'] });
@@ -91,6 +94,9 @@ export default function MakerPage() {
 
   const totalPages = data ? Math.ceil(data.count / PAGE_SIZE) : 1;
 
+  const start = (page - 1) * PAGE_SIZE + 1;
+  const end = data ? Math.min(page * PAGE_SIZE, data.count) : 0;
+
   return (
     <div className="min-h-screen bg-slate-50">
       <Navbar />
@@ -98,9 +104,9 @@ export default function MakerPage() {
       <main className="max-w-7xl mx-auto px-4 sm:px-6 py-8">
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6">
           <div>
-            <h2 className="text-2xl font-bold text-slate-800">My Stock Requests</h2>
+            <h2 className="text-2xl font-bold text-slate-800">{t('makerPage.title')}</h2>
             <p className="text-slate-500 text-sm mt-0.5">
-              Submit requests to add stock or change product details
+              {t('makerPage.subtitle')}
             </p>
           </div>
           <div className="flex gap-2 flex-wrap">
@@ -110,21 +116,21 @@ export default function MakerPage() {
                 className="flex items-center gap-2 px-4 py-2.5 border border-red-300 text-red-600 hover:bg-red-50 font-semibold rounded-lg transition"
               >
                 <XCircle size={16} />
-                Withdraw {selectedIds.size} selected
+                {t('makerPage.withdrawSelected', { count: selectedIds.size })}
               </button>
             )}
             <button
               onClick={() => navigate('/maker/products')}
               className="flex items-center gap-2 px-4 py-2.5 border border-slate-300 text-slate-600 hover:bg-slate-100 font-semibold rounded-lg transition"
             >
-              View Inventory
+              {t('makerPage.viewInventory')}
             </button>
             <button
               onClick={() => setShowForm(true)}
               className="flex items-center gap-2 px-4 py-2.5 bg-[#ED7E07] hover:bg-[#d06d06] text-white font-semibold rounded-lg transition shadow-sm"
             >
               <Plus size={18} />
-              New Inventory Upload
+              {t('makerPage.newUpload')}
             </button>
           </div>
         </div>
@@ -132,13 +138,13 @@ export default function MakerPage() {
         <div className="bg-white rounded-xl border border-slate-200 overflow-hidden shadow-sm">
           {isError ? (
             <div className="flex flex-col items-center justify-center py-16 gap-4">
-              <p className="text-slate-500">Failed to load requests.</p>
+              <p className="text-slate-500">{t('makerPage.failedToLoad')}</p>
               <button
                 onClick={() => refetch()}
                 className="flex items-center gap-2 px-4 py-2 border border-slate-300 rounded-lg text-sm hover:bg-slate-50 transition"
               >
                 <RefreshCw size={16} />
-                Retry
+                {t('makerPage.retry')}
               </button>
             </div>
           ) : (
@@ -154,15 +160,15 @@ export default function MakerPage() {
                           onChange={toggleSelectAll}
                           disabled={pendingResults.length === 0}
                           className="w-4 h-4 accent-orange-500"
-                          title="Select all pending"
+                          title={t('makerPage.selectAllPending')}
                         />
                       </th>
-                      <th className="px-4 py-3 text-left font-semibold text-slate-600">Ref #</th>
-                      <th className="px-4 py-3 text-left font-semibold text-slate-600">Document Ref</th>
-                      <th className="px-4 py-3 text-center font-semibold text-slate-600">Articles</th>
-                      <th className="px-4 py-3 text-center font-semibold text-slate-600">Status</th>
-                      <th className="px-4 py-3 text-left font-semibold text-slate-600">Submitted</th>
-                      <th className="px-4 py-3 text-center font-semibold text-slate-600">Actions</th>
+                      <th className="px-4 py-3 text-left font-semibold text-slate-600">{t('makerPage.headers.ref')}</th>
+                      <th className="px-4 py-3 text-left font-semibold text-slate-600">{t('makerPage.headers.documentRef')}</th>
+                      <th className="px-4 py-3 text-center font-semibold text-slate-600">{t('makerPage.headers.articles')}</th>
+                      <th className="px-4 py-3 text-center font-semibold text-slate-600">{t('makerPage.headers.status')}</th>
+                      <th className="px-4 py-3 text-left font-semibold text-slate-600">{t('makerPage.headers.submitted')}</th>
+                      <th className="px-4 py-3 text-center font-semibold text-slate-600">{t('makerPage.headers.actions')}</th>
                     </tr>
                   </thead>
                   <tbody className="divide-y divide-slate-100">
@@ -181,8 +187,8 @@ export default function MakerPage() {
                         <td colSpan={7} className="py-16 text-center">
                           <div className="flex flex-col items-center gap-3 text-slate-400">
                             <PackageOpen size={40} />
-                            <p className="font-medium text-slate-500">No requests yet</p>
-                            <p className="text-xs">Create your first stock request to get started.</p>
+                            <p className="font-medium text-slate-500">{t('makerPage.empty.heading')}</p>
+                            <p className="text-xs">{t('makerPage.empty.hint')}</p>
                           </div>
                         </td>
                       </tr>
@@ -221,19 +227,19 @@ export default function MakerPage() {
                               <button
                                 onClick={() => setViewingId(req.id)}
                                 className="p-1.5 text-slate-400 hover:text-blue-600 hover:bg-blue-50 rounded-lg transition"
-                                title="View details"
+                                title={t('makerPage.tooltips.view')}
                               >
                                 <Eye size={15} />
                               </button>
                               {req.status === 'pending' && (
                                 <button
                                   onClick={() => {
-                                    if (confirm('Withdraw this request?')) {
+                                    if (confirm(t('makerPage.withdrawConfirm'))) {
                                       withdrawMut.mutate(req.id);
                                     }
                                   }}
                                   className="p-1.5 text-slate-400 hover:text-red-600 hover:bg-red-50 rounded-lg transition"
-                                  title="Withdraw request"
+                                  title={t('makerPage.tooltips.withdraw')}
                                 >
                                   <XCircle size={15} />
                                 </button>
@@ -245,7 +251,7 @@ export default function MakerPage() {
                                   title="Edit and re-submit as new request"
                                 >
                                   <Pencil size={12} />
-                                  Edit &amp; Re-submit
+                                  {t('makerPage.editResubmit')}
                                 </button>
                               )}
                             </div>
@@ -260,7 +266,7 @@ export default function MakerPage() {
               {data && data.count > PAGE_SIZE && (
                 <div className="flex items-center justify-between px-4 py-3 border-t border-slate-200 bg-slate-50">
                   <p className="text-xs text-slate-500">
-                    Showing {(page - 1) * PAGE_SIZE + 1}–{Math.min(page * PAGE_SIZE, data.count)} of {data.count}
+                    {t('makerPage.showing', { start, end, total: data.count })}
                   </p>
                   <div className="flex items-center gap-1">
                     <button

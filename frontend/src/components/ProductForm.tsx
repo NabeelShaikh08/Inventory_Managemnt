@@ -3,27 +3,20 @@ import { useForm } from 'react-hook-form';
 import { z } from 'zod';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import { useTranslation } from 'react-i18next';
 import { getCategories } from '../api/categories';
 import { createProduct, updateProduct } from '../api/products';
 import type { Product, ProductFormData } from '../types';
 import { X } from 'lucide-react';
 
-const schema = z.object({
-  name: z.string().min(1, 'Product name is required').max(255, 'Name is too long'),
-  description: z.string(),
-  price: z
-    .string()
-    .min(1, 'Price is required')
-    .refine((v) => parseFloat(v) > 0, { message: 'Price must be greater than 0' }),
-  stock: z
-    .number({ invalid_type_error: 'Stock must be a number' })
-    .int('Stock must be a whole number')
-    .min(0, 'Stock cannot be negative'),
-  category: z.number({ invalid_type_error: 'Please select a category' }).min(1, 'Category is required'),
-  is_active: z.boolean(),
-});
-
-type FormData = z.infer<typeof schema>;
+type FormData = {
+  name: string;
+  description: string;
+  price: string;
+  stock: number;
+  category: number;
+  is_active: boolean;
+};
 
 interface Props {
   product?: Product | null;
@@ -31,7 +24,23 @@ interface Props {
 }
 
 export default function ProductForm({ product, onClose }: Props) {
+  const { t } = useTranslation();
   const queryClient = useQueryClient();
+
+  const schema = z.object({
+    name: z.string().min(1, t('productForm.nameRequired')).max(255, t('productForm.nameTooLong')),
+    description: z.string(),
+    price: z
+      .string()
+      .min(1, t('productForm.priceRequired'))
+      .refine((v) => parseFloat(v) > 0, { message: t('productForm.priceGtZero') }),
+    stock: z
+      .number({ invalid_type_error: t('productForm.stockNumber') })
+      .int(t('productForm.stockWhole'))
+      .min(0, t('productForm.stockNegative')),
+    category: z.number({ invalid_type_error: t('productForm.categorySelect') }).min(1, t('productForm.categoryRequired')),
+    is_active: z.boolean(),
+  });
 
   const { data: categories = [] } = useQuery({
     queryKey: ['categories'],
@@ -101,7 +110,7 @@ export default function ProductForm({ product, onClose }: Props) {
       <div className="bg-white rounded-2xl shadow-2xl w-full max-w-lg max-h-[90vh] overflow-y-auto">
         <div className="flex items-center justify-between p-4 sm:p-6 border-b border-slate-100">
           <h2 className="text-lg font-semibold text-slate-800">
-            {product ? 'Edit Product' : 'Add New Product'}
+            {product ? t('productForm.editTitle') : t('productForm.addTitle')}
           </h2>
           <button
             onClick={onClose}
@@ -114,31 +123,31 @@ export default function ProductForm({ product, onClose }: Props) {
         <form onSubmit={onSubmit} noValidate className="p-4 sm:p-6 space-y-5">
           <div>
             <label className="block text-sm font-medium text-slate-700 mb-1">
-              Product Name <span className="text-red-500">*</span>
+              {t('productForm.name')}
             </label>
             <input
               type="text"
               {...register('name')}
               className={inputClass(!!errors.name)}
-              placeholder="e.g. Ordinary Portland Cement 50 kg"
+              placeholder={t('productForm.namePlaceholder')}
             />
             {errors.name && <p className="mt-1 text-xs text-red-500">{errors.name.message}</p>}
           </div>
 
           <div>
-            <label className="block text-sm font-medium text-slate-700 mb-1">Description</label>
+            <label className="block text-sm font-medium text-slate-700 mb-1">{t('productForm.description')}</label>
             <textarea
               {...register('description')}
               rows={2}
               className={inputClass(!!errors.description)}
-              placeholder="Specification, grade, notes…"
+              placeholder={t('productForm.descriptionPlaceholder')}
             />
           </div>
 
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div>
               <label className="block text-sm font-medium text-slate-700 mb-1">
-                Price (AED) <span className="text-red-500">*</span>
+                {t('productForm.price')}
               </label>
               <input
                 type="number"
@@ -146,14 +155,14 @@ export default function ProductForm({ product, onClose }: Props) {
                 min="0.01"
                 {...register('price')}
                 className={inputClass(!!errors.price)}
-                placeholder="0.00"
+                placeholder={t('productForm.pricePlaceholder')}
               />
               {errors.price && <p className="mt-1 text-xs text-red-500">{errors.price.message}</p>}
             </div>
 
             <div>
               <label className="block text-sm font-medium text-slate-700 mb-1">
-                Stock <span className="text-red-500">*</span>
+                {t('productForm.stock')}
               </label>
               <input
                 type="number"
@@ -161,7 +170,7 @@ export default function ProductForm({ product, onClose }: Props) {
                 step="1"
                 {...register('stock', { valueAsNumber: true })}
                 className={inputClass(!!errors.stock)}
-                placeholder="0"
+                placeholder={t('productForm.stockPlaceholder')}
               />
               {errors.stock && <p className="mt-1 text-xs text-red-500">{errors.stock.message}</p>}
             </div>
@@ -169,13 +178,13 @@ export default function ProductForm({ product, onClose }: Props) {
 
           <div>
             <label className="block text-sm font-medium text-slate-700 mb-1">
-              Category <span className="text-red-500">*</span>
+              {t('productForm.category')}
             </label>
             <select
               {...register('category', { valueAsNumber: true })}
               className={inputClass(!!errors.category)}
             >
-              <option value={0}>Select a category…</option>
+              <option value={0}>{t('productForm.categoryPlaceholder')}</option>
               {categories.map((c) => (
                 <option key={c.id} value={c.id}>
                   {c.name}
@@ -193,13 +202,13 @@ export default function ProductForm({ product, onClose }: Props) {
               className="w-4 h-4 rounded border-slate-300 text-blue-600 focus:ring-blue-500"
             />
             <label htmlFor="is_active" className="text-sm font-medium text-slate-700">
-              Active (visible in inventory)
+              {t('productForm.activeLabel')}
             </label>
           </div>
 
           {mutation.isError && (
             <div className="p-3 rounded-lg bg-red-50 border border-red-200 text-red-600 text-sm">
-              Something went wrong. Please check the fields and try again.
+              {t('productForm.genericError')}
             </div>
           )}
 
@@ -209,14 +218,14 @@ export default function ProductForm({ product, onClose }: Props) {
               onClick={onClose}
               className="flex-1 py-2.5 px-4 border border-slate-300 text-slate-700 font-medium rounded-lg hover:bg-slate-50 transition"
             >
-              Cancel
+              {t('productForm.cancel')}
             </button>
             <button
               type="submit"
               disabled={isSubmitting || mutation.isPending}
               className="flex-1 py-2.5 px-4 bg-blue-600 hover:bg-blue-700 disabled:bg-blue-400 text-white font-semibold rounded-lg transition"
             >
-              {mutation.isPending ? 'Saving…' : product ? 'Save Changes' : 'Add Product'}
+              {mutation.isPending ? t('productForm.saving') : product ? t('productForm.saveChanges') : t('productForm.addProduct')}
             </button>
           </div>
         </form>

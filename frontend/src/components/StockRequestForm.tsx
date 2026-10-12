@@ -1,5 +1,6 @@
 import { useState, useRef } from 'react';
 import { useQuery, useMutation } from '@tanstack/react-query';
+import { useTranslation } from 'react-i18next';
 import { X, Plus, Trash2, Upload, FileText, AlertCircle } from 'lucide-react';
 import { getProducts } from '../api/products';
 import { getCategories } from '../api/categories';
@@ -158,6 +159,7 @@ function lineFromRequestLine(rl: RequestLine): LineFormState {
 }
 
 export default function StockRequestForm({ onClose, onSuccess, prefillLines, prefillDocRef }: Props) {
+  const { t } = useTranslation();
   const [tab, setTab] = useState<'manual' | 'csv'>('manual');
   const [documentRef, setDocumentRef] = useState(prefillDocRef ?? '');
   const [remarks, setRemarks] = useState('');
@@ -191,7 +193,7 @@ export default function StockRequestForm({ onClose, onSuccess, prefillLines, pre
     onError: (err: unknown) => {
       const msg =
         (err as { response?: { data?: { detail?: string } } })?.response?.data?.detail ||
-        'Failed to submit request. Please check your inputs.';
+        t('requestForm.errorSubmit');
       setServerError(msg);
     },
   });
@@ -282,12 +284,12 @@ export default function StockRequestForm({ onClose, onSuccess, prefillLines, pre
     let parsedLines: RequestLineInput[];
     if (tab === 'csv') {
       if (!csvParsed || csvRows.length === 0) {
-        setServerError('Please parse the CSV first.');
+        setServerError(t('requestForm.errorParseCsv'));
         return;
       }
       const hasErrors = csvRows.some((r) => r.error);
       if (hasErrors) {
-        setServerError('Fix the CSV errors before submitting.');
+        setServerError(t('requestForm.errorFixCsv'));
         return;
       }
       parsedLines = buildLinesFromCsv(csvRows);
@@ -304,7 +306,7 @@ export default function StockRequestForm({ onClose, onSuccess, prefillLines, pre
       <div className="bg-white rounded-2xl shadow-2xl w-full max-w-2xl max-h-[90vh] flex flex-col">
         <div className="flex items-center justify-between p-4 sm:p-6 border-b border-slate-200">
           <h2 className="text-lg font-bold text-slate-800">
-            {prefillLines ? 'Re-submit Request' : 'New Inventory Upload'}
+            {prefillLines ? t('requestForm.resubmitTitle') : t('requestForm.newTitle')}
           </h2>
           <button
             onClick={onClose}
@@ -326,7 +328,7 @@ export default function StockRequestForm({ onClose, onSuccess, prefillLines, pre
             }`}
           >
             <FileText size={14} />
-            Manual
+            {t('requestForm.tabManual')}
           </button>
           <button
             type="button"
@@ -338,7 +340,7 @@ export default function StockRequestForm({ onClose, onSuccess, prefillLines, pre
             }`}
           >
             <Upload size={14} />
-            Bulk CSV
+            {t('requestForm.tabCsv')}
           </button>
         </div>
 
@@ -348,25 +350,25 @@ export default function StockRequestForm({ onClose, onSuccess, prefillLines, pre
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <div>
                 <label className="block text-sm font-medium text-slate-700 mb-1">
-                  Document Ref <span className="text-slate-400 font-normal">(optional)</span>
+                  {t('requestForm.documentRefOptional')}
                 </label>
                 <input
                   type="text"
                   value={documentRef}
                   onChange={(e) => setDocumentRef(e.target.value)}
-                  placeholder="e.g. PO-2026-001"
+                  placeholder={t('requestForm.documentRefPlaceholder')}
                   className="w-full px-3 py-2 border border-slate-300 rounded-lg text-sm text-slate-800 focus:outline-none focus:ring-2 focus:ring-orange-400 transition"
                 />
               </div>
               <div>
                 <label className="block text-sm font-medium text-slate-700 mb-1">
-                  Remarks <span className="text-slate-400 font-normal">(optional)</span>
+                  {t('requestForm.remarksOptional')}
                 </label>
                 <input
                   type="text"
                   value={remarks}
                   onChange={(e) => setRemarks(e.target.value)}
-                  placeholder="Any notes for the checker"
+                  placeholder={t('requestForm.remarksPlaceholder')}
                   className="w-full px-3 py-2 border border-slate-300 rounded-lg text-sm text-slate-800 focus:outline-none focus:ring-2 focus:ring-orange-400 transition"
                 />
               </div>
@@ -376,14 +378,14 @@ export default function StockRequestForm({ onClose, onSuccess, prefillLines, pre
             {tab === 'manual' && (
               <div>
                 <div className="flex items-center justify-between mb-3">
-                  <h3 className="font-semibold text-slate-700">Articles</h3>
+                  <h3 className="font-semibold text-slate-700">{t('requestForm.articles')}</h3>
                   <button
                     type="button"
                     onClick={addLine}
                     className="flex items-center gap-1.5 text-sm text-[#ED7E07] hover:text-[#d06d06] font-medium"
                   >
                     <Plus size={15} />
-                    Add Article
+                    {t('requestForm.addArticle')}
                   </button>
                 </div>
 
@@ -392,7 +394,7 @@ export default function StockRequestForm({ onClose, onSuccess, prefillLines, pre
                     <div key={idx} className="p-4 border border-slate-200 rounded-xl bg-slate-50 space-y-3">
                       <div className="flex items-center justify-between">
                         <span className="text-xs font-semibold text-slate-500 uppercase tracking-wide">
-                          Article {idx + 1}
+                          {t('requestForm.articleLabel', { number: idx + 1 })}
                         </span>
                         {lines.length > 1 && (
                           <button
@@ -406,28 +408,28 @@ export default function StockRequestForm({ onClose, onSuccess, prefillLines, pre
                       </div>
 
                       <div>
-                        <label className="block text-xs font-medium text-slate-600 mb-1">Type</label>
+                        <label className="block text-xs font-medium text-slate-600 mb-1">{t('requestForm.type')}</label>
                         <select
                           value={line.action}
                           onChange={(e) => updateLine(idx, 'action', e.target.value)}
                           className="w-full px-3 py-2 border border-slate-300 rounded-lg text-sm text-slate-800 focus:outline-none focus:ring-2 focus:ring-orange-400 transition"
                         >
-                          <option value="stock_in">Stock In</option>
-                          <option value="new_product">New Product / SKU</option>
-                          <option value="edit_product">Edit Product Details</option>
+                          <option value="stock_in">{t('requestForm.stockIn')}</option>
+                          <option value="new_product">{t('requestForm.newProductSku')}</option>
+                          <option value="edit_product">{t('requestForm.editProductDetails')}</option>
                         </select>
                       </div>
 
                       {(line.action === 'stock_in' || line.action === 'edit_product') && (
                         <div>
-                          <label className="block text-xs font-medium text-slate-600 mb-1">Product</label>
+                          <label className="block text-xs font-medium text-slate-600 mb-1">{t('requestForm.product')}</label>
                           <select
                             value={line.product_id}
                             onChange={(e) => updateLine(idx, 'product_id', e.target.value)}
                             required
                             className="w-full px-3 py-2 border border-slate-300 rounded-lg text-sm text-slate-800 focus:outline-none focus:ring-2 focus:ring-orange-400 transition"
                           >
-                            <option value="">Select product…</option>
+                            <option value="">{t('requestForm.selectProduct')}</option>
                             {products.map((p) => (
                               <option key={p.id} value={p.id}>
                                 [{p.category_code}] {p.name}
@@ -442,7 +444,7 @@ export default function StockRequestForm({ onClose, onSuccess, prefillLines, pre
                           <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
                             <div>
                               <label className="block text-xs font-medium text-slate-600 mb-1">
-                                UOM <span className="text-red-500">*</span>
+                                {t('requestForm.uomRequired')}
                               </label>
                               <select
                                 value={line.uom}
@@ -450,14 +452,14 @@ export default function StockRequestForm({ onClose, onSuccess, prefillLines, pre
                                 required
                                 className="w-full px-3 py-2 border border-slate-300 rounded-lg text-sm text-slate-800 focus:outline-none focus:ring-2 focus:ring-orange-400 transition"
                               >
-                                <option value="">Select UOM…</option>
+                                <option value="">{t('requestForm.selectUom')}</option>
                                 {UOM_OPTIONS.map((u) => (
                                   <option key={u} value={u}>{u}</option>
                                 ))}
                               </select>
                             </div>
                             <div>
-                              <label className="block text-xs font-medium text-slate-600 mb-1">Quantity</label>
+                              <label className="block text-xs font-medium text-slate-600 mb-1">{t('requestForm.quantity')}</label>
                               <input
                                 type="number"
                                 min="0.01"
@@ -470,7 +472,7 @@ export default function StockRequestForm({ onClose, onSuccess, prefillLines, pre
                               />
                             </div>
                             <div>
-                              <label className="block text-xs font-medium text-slate-600 mb-1">Unit Cost (AED)</label>
+                              <label className="block text-xs font-medium text-slate-600 mb-1">{t('requestForm.unitCost')}</label>
                               <input
                                 type="number"
                                 min="0"
@@ -484,17 +486,17 @@ export default function StockRequestForm({ onClose, onSuccess, prefillLines, pre
                           </div>
                           <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                             <div>
-                              <label className="block text-xs font-medium text-slate-600 mb-1">Supplier</label>
+                              <label className="block text-xs font-medium text-slate-600 mb-1">{t('requestForm.supplier')}</label>
                               <input
                                 type="text"
                                 value={line.supplier}
                                 onChange={(e) => updateLine(idx, 'supplier', e.target.value)}
-                                placeholder="Supplier name"
+                                placeholder={t('requestForm.supplierPlaceholder')}
                                 className="w-full px-3 py-2 border border-slate-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-orange-400 transition"
                               />
                             </div>
                             <div>
-                              <label className="block text-xs font-medium text-slate-600 mb-1">Warehouse</label>
+                              <label className="block text-xs font-medium text-slate-600 mb-1">{t('requestForm.warehouse')}</label>
                               <input
                                 type="text"
                                 value={WAREHOUSE_CODE}
@@ -505,12 +507,12 @@ export default function StockRequestForm({ onClose, onSuccess, prefillLines, pre
                           </div>
                           <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                             <div>
-                              <label className="block text-xs font-medium text-slate-600 mb-1">Barcode / QR <span className="text-slate-400 font-normal">(optional)</span></label>
+                              <label className="block text-xs font-medium text-slate-600 mb-1">{t('requestForm.barcodeOptional')}</label>
                               <input
                                 type="text"
                                 value={line.barcode}
                                 onChange={(e) => updateLine(idx, 'barcode', e.target.value)}
-                                placeholder="Barcode or QR code"
+                                placeholder={t('requestForm.barcodePlaceholder')}
                                 className="w-full px-3 py-2 border border-slate-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-orange-400 transition"
                               />
                             </div>
@@ -522,32 +524,32 @@ export default function StockRequestForm({ onClose, onSuccess, prefillLines, pre
                         <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                           <div>
                             <label className="block text-xs font-medium text-slate-600 mb-1">
-                              {line.action === 'new_product' ? 'Product Name *' : 'New Name (optional)'}
+                              {line.action === 'new_product' ? t('requestForm.productName') : t('requestForm.newName')}
                             </label>
                             <input
                               type="text"
                               value={line.proposed_name}
                               onChange={(e) => updateLine(idx, 'proposed_name', e.target.value)}
                               required={line.action === 'new_product'}
-                              placeholder="Product name"
+                              placeholder={t('requestForm.productNamePlaceholder')}
                               className="w-full px-3 py-2 border border-slate-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-orange-400 transition"
                             />
                           </div>
                           <div>
                             <label className="block text-xs font-medium text-slate-600 mb-1">
-                              SKU <span className="text-slate-400 font-normal">(optional)</span>
+                              {t('requestForm.skuOptional')}
                             </label>
                             <input
                               type="text"
                               value={line.proposed_sku}
                               onChange={(e) => updateLine(idx, 'proposed_sku', e.target.value)}
-                              placeholder="e.g. CEM-0001"
+                              placeholder={t('requestForm.skuPlaceholder')}
                               className="w-full px-3 py-2 border border-slate-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-orange-400 transition"
                             />
                           </div>
                           <div>
                             <label className="block text-xs font-medium text-slate-600 mb-1">
-                              UOM <span className="text-red-500">*</span>
+                              {t('requestForm.uomRequired')}
                             </label>
                             <select
                               value={line.proposed_uom}
@@ -555,14 +557,14 @@ export default function StockRequestForm({ onClose, onSuccess, prefillLines, pre
                               required={line.action === 'new_product'}
                               className="w-full px-3 py-2 border border-slate-300 rounded-lg text-sm text-slate-800 focus:outline-none focus:ring-2 focus:ring-orange-400 transition"
                             >
-                              <option value="">Select UOM…</option>
+                              <option value="">{t('requestForm.selectUom')}</option>
                               {UOM_OPTIONS.map((u) => (
                                 <option key={u} value={u}>{u}</option>
                               ))}
                             </select>
                           </div>
                           <div>
-                            <label className="block text-xs font-medium text-slate-600 mb-1">Price (AED)</label>
+                            <label className="block text-xs font-medium text-slate-600 mb-1">{t('requestForm.price')}</label>
                             <input
                               type="number"
                               min="0.01"
@@ -574,7 +576,7 @@ export default function StockRequestForm({ onClose, onSuccess, prefillLines, pre
                             />
                           </div>
                           <div>
-                            <label className="block text-xs font-medium text-slate-600 mb-1">Initial Stock</label>
+                            <label className="block text-xs font-medium text-slate-600 mb-1">{t('requestForm.initialStock')}</label>
                             <input
                               type="number"
                               min="0"
@@ -585,13 +587,13 @@ export default function StockRequestForm({ onClose, onSuccess, prefillLines, pre
                             />
                           </div>
                           <div>
-                            <label className="block text-xs font-medium text-slate-600 mb-1">Category</label>
+                            <label className="block text-xs font-medium text-slate-600 mb-1">{t('requestForm.category')}</label>
                             <select
                               value={line.proposed_category_id}
                               onChange={(e) => updateLine(idx, 'proposed_category_id', e.target.value)}
                               className="w-full px-3 py-2 border border-slate-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-orange-400 transition"
                             >
-                              <option value="">Select category…</option>
+                              <option value="">{t('requestForm.selectCategory')}</option>
                               {categories.map((c) => (
                                 <option key={c.id} value={c.id}>
                                   {c.name}
@@ -600,17 +602,17 @@ export default function StockRequestForm({ onClose, onSuccess, prefillLines, pre
                             </select>
                           </div>
                           <div>
-                            <label className="block text-xs font-medium text-slate-600 mb-1">Subcategory <span className="text-slate-400 font-normal">(optional)</span></label>
+                            <label className="block text-xs font-medium text-slate-600 mb-1">{t('requestForm.subcategoryOptional')}</label>
                             <input
                               type="text"
                               value={line.proposed_subcategory}
                               onChange={(e) => updateLine(idx, 'proposed_subcategory', e.target.value)}
-                              placeholder="e.g. Structural Steel"
+                              placeholder={t('requestForm.subcategoryPlaceholder')}
                               className="w-full px-3 py-2 border border-slate-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-orange-400 transition"
                             />
                           </div>
                           <div>
-                            <label className="block text-xs font-medium text-slate-600 mb-1">Min Stock <span className="text-slate-400 font-normal">(optional)</span></label>
+                            <label className="block text-xs font-medium text-slate-600 mb-1">{t('requestForm.minStockOptional')}</label>
                             <input
                               type="number"
                               min="0"
@@ -621,7 +623,7 @@ export default function StockRequestForm({ onClose, onSuccess, prefillLines, pre
                             />
                           </div>
                           <div>
-                            <label className="block text-xs font-medium text-slate-600 mb-1">Reorder Level <span className="text-slate-400 font-normal">(optional)</span></label>
+                            <label className="block text-xs font-medium text-slate-600 mb-1">{t('requestForm.reorderLevelOptional')}</label>
                             <input
                               type="number"
                               min="0"
@@ -632,17 +634,17 @@ export default function StockRequestForm({ onClose, onSuccess, prefillLines, pre
                             />
                           </div>
                           <div>
-                            <label className="block text-xs font-medium text-slate-600 mb-1">Barcode / QR <span className="text-slate-400 font-normal">(optional)</span></label>
+                            <label className="block text-xs font-medium text-slate-600 mb-1">{t('requestForm.barcodeOptional')}</label>
                             <input
                               type="text"
                               value={line.barcode}
                               onChange={(e) => updateLine(idx, 'barcode', e.target.value)}
-                              placeholder="Barcode or QR code"
+                              placeholder={t('requestForm.barcodePlaceholder')}
                               className="w-full px-3 py-2 border border-slate-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-orange-400 transition"
                             />
                           </div>
                           <div>
-                            <label className="block text-xs font-medium text-slate-600 mb-1">Warehouse</label>
+                            <label className="block text-xs font-medium text-slate-600 mb-1">{t('requestForm.warehouse')}</label>
                             <input
                               type="text"
                               value={WAREHOUSE_CODE}
@@ -651,12 +653,12 @@ export default function StockRequestForm({ onClose, onSuccess, prefillLines, pre
                             />
                           </div>
                           <div className="col-span-1 sm:col-span-2">
-                            <label className="block text-xs font-medium text-slate-600 mb-1">Description</label>
+                            <label className="block text-xs font-medium text-slate-600 mb-1">{t('requestForm.description')}</label>
                             <textarea
                               value={line.proposed_description}
                               onChange={(e) => updateLine(idx, 'proposed_description', e.target.value)}
                               rows={2}
-                              placeholder="Optional description"
+                              placeholder={t('requestForm.descriptionPlaceholder')}
                               className="w-full px-3 py-2 border border-slate-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-orange-400 transition resize-none"
                             />
                           </div>
@@ -675,19 +677,19 @@ export default function StockRequestForm({ onClose, onSuccess, prefillLines, pre
                 <div className="flex items-start gap-3 p-3 bg-blue-50 border border-blue-200 rounded-lg text-sm text-blue-700">
                   <AlertCircle size={16} className="mt-0.5 shrink-0" />
                   <div className="space-y-1">
-                    <p className="font-medium">CSV Format</p>
+                    <p className="font-medium">{t('requestForm.csvFormat')}</p>
                     <p className="text-xs text-blue-600">
-                      Columns: <code className="font-mono">action, product_name, quantity, unit_cost, supplier, uom, proposed_name, proposed_price, proposed_stock, category, description, subcategory, min_stock, reorder_level, barcode</code>
+                      {t('requestForm.csvColumns')}
                     </p>
                     <p className="text-xs text-blue-600">
-                      Valid actions: <code className="font-mono">stock_in</code>, <code className="font-mono">new_product</code>, <code className="font-mono">edit_product</code>
+                      {t('requestForm.csvValidActions')}
                     </p>
                     <a
                       href="/inventory_upload_template.csv"
                       download="inventory_upload_template.csv"
                       className="inline-flex items-center gap-1 text-xs font-medium text-blue-700 hover:underline"
                     >
-                      Download template CSV
+                      {t('requestForm.downloadTemplate')}
                     </a>
                   </div>
                 </div>
@@ -695,14 +697,14 @@ export default function StockRequestForm({ onClose, onSuccess, prefillLines, pre
                 {/* File upload */}
                 <div>
                   <div className="flex items-center gap-3 mb-2">
-                    <label className="block text-sm font-medium text-slate-700">Upload or paste CSV</label>
+                    <label className="block text-sm font-medium text-slate-700">{t('requestForm.uploadOrPaste')}</label>
                     <button
                       type="button"
                       onClick={() => fileInputRef.current?.click()}
                       className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium border border-slate-300 rounded-lg hover:bg-slate-50 transition text-slate-600"
                     >
                       <Upload size={13} />
-                      Choose file
+                      {t('requestForm.chooseFile')}
                     </button>
                     <input
                       ref={fileInputRef}
@@ -727,29 +729,29 @@ export default function StockRequestForm({ onClose, onSuccess, prefillLines, pre
                   disabled={!csvText.trim()}
                   className="px-4 py-2 text-sm font-medium bg-slate-100 hover:bg-slate-200 disabled:opacity-40 rounded-lg transition"
                 >
-                  Parse &amp; Preview
+                  {t('requestForm.parsePreview')}
                 </button>
 
                 {/* Preview table */}
                 {csvParsed && csvRows.length > 0 && (
                   <div className="space-y-2">
                     <p className="text-sm font-medium text-slate-700">
-                      {csvRows.length} row{csvRows.length !== 1 ? 's' : ''} parsed
+                      {t('requestForm.rowsParsed', { count: csvRows.length })}
                       {hasErrors && (
-                        <span className="ml-2 text-red-500 font-normal">— fix errors before submitting</span>
+                        <span className="ms-2 text-red-500 font-normal">{t('requestForm.fixErrors')}</span>
                       )}
                     </p>
                     <div className="overflow-x-auto border border-slate-200 rounded-lg">
                       <table className="w-full text-xs">
                         <thead className="bg-slate-50 border-b border-slate-200">
                           <tr>
-                            <th className="px-3 py-2 text-left text-slate-500 font-medium">#</th>
-                            <th className="px-3 py-2 text-left text-slate-500 font-medium">Action</th>
-                            <th className="px-3 py-2 text-left text-slate-500 font-medium">Product / Name</th>
-                            <th className="px-3 py-2 text-right text-slate-500 font-medium">Qty</th>
-                            <th className="px-3 py-2 text-right text-slate-500 font-medium">Price</th>
-                            <th className="px-3 py-2 text-left text-slate-500 font-medium">Category</th>
-                            <th className="px-3 py-2 text-left text-slate-500 font-medium">Status</th>
+                            <th className="px-3 py-2 text-left text-slate-500 font-medium">{t('requestForm.csvHeaders.num')}</th>
+                            <th className="px-3 py-2 text-left text-slate-500 font-medium">{t('requestForm.csvHeaders.action')}</th>
+                            <th className="px-3 py-2 text-left text-slate-500 font-medium">{t('requestForm.csvHeaders.productName')}</th>
+                            <th className="px-3 py-2 text-right text-slate-500 font-medium">{t('requestForm.csvHeaders.qty')}</th>
+                            <th className="px-3 py-2 text-right text-slate-500 font-medium">{t('requestForm.csvHeaders.price')}</th>
+                            <th className="px-3 py-2 text-left text-slate-500 font-medium">{t('requestForm.csvHeaders.category')}</th>
+                            <th className="px-3 py-2 text-left text-slate-500 font-medium">{t('requestForm.csvHeaders.status')}</th>
                           </tr>
                         </thead>
                         <tbody className="divide-y divide-slate-100">
@@ -781,7 +783,7 @@ export default function StockRequestForm({ onClose, onSuccess, prefillLines, pre
                 )}
 
                 {csvParsed && csvRows.length === 0 && (
-                  <p className="text-sm text-slate-400">No data rows found. Make sure the CSV has a header row and at least one data row.</p>
+                  <p className="text-sm text-slate-400">{t('requestForm.csvEmpty')}</p>
                 )}
               </div>
             )}
@@ -799,14 +801,14 @@ export default function StockRequestForm({ onClose, onSuccess, prefillLines, pre
               onClick={onClose}
               className="px-4 py-2.5 text-sm font-medium text-slate-600 hover:bg-slate-100 rounded-lg transition"
             >
-              Cancel
+              {t('requestForm.cancel')}
             </button>
             <button
               type="submit"
               disabled={mutation.isPending || (tab === 'csv' && (!csvParsed || hasErrors || csvRows.length === 0))}
               className="px-6 py-2.5 bg-[#ED7E07] hover:bg-[#d06d06] disabled:bg-orange-300 text-white font-semibold rounded-lg transition"
             >
-              {mutation.isPending ? 'Submitting…' : 'Submit Request'}
+              {mutation.isPending ? t('requestForm.submitting') : t('requestForm.submitRequest')}
             </button>
           </div>
         </form>

@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
+import { useTranslation } from 'react-i18next';
 import { getProducts } from '../api/products';
 import { getCategories } from '../api/categories';
 import { useDebounce } from '../hooks/useDebounce';
@@ -26,20 +27,21 @@ function toOrdering(field: SortField, dir: 'asc' | 'desc') {
 function SortIcon({ field, ordering }: { field: SortField; ordering: string }) {
   const active = ordering === field || ordering === `-${field}`;
   const asc = ordering === field;
-  if (!active) return <ChevronsUpDown size={13} className="text-slate-400 ml-1 inline-block" />;
+  if (!active) return <ChevronsUpDown size={13} className="text-slate-400 ms-1 inline-block" />;
   return asc
-    ? <ChevronUp size={13} className="text-blue-600 ml-1 inline-block" />
-    : <ChevronDown size={13} className="text-blue-600 ml-1 inline-block" />;
+    ? <ChevronUp size={13} className="text-blue-600 ms-1 inline-block" />
+    : <ChevronDown size={13} className="text-blue-600 ms-1 inline-block" />;
 }
 
 function StatusBadge({ isActive }: { isActive: boolean }) {
+  const { t } = useTranslation();
   return (
     <span
       className={`inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium ${
         isActive ? 'bg-green-100 text-green-700' : 'bg-slate-100 text-slate-500'
       }`}
     >
-      {isActive ? 'Active' : 'Inactive'}
+      {isActive ? t('products.status.active') : t('products.status.inactive')}
     </span>
   );
 }
@@ -71,6 +73,7 @@ function buildPages(total: number, current: number): (number | '…')[] {
 }
 
 export default function ProductsPage({ readOnly = false }: { readOnly?: boolean }) {
+  const { t } = useTranslation();
   const [search, setSearch] = useState('');
   const [categoryFilter, setCategoryFilter] = useState<number | ''>('');
   const [ordering, setOrdering] = useState('name');
@@ -127,6 +130,9 @@ export default function ProductsPage({ readOnly = false }: { readOnly?: boolean 
 
   const hasActiveFilter = !!categoryFilter;
 
+  const start = (page - 1) * PAGE_SIZE + 1;
+  const end = data ? Math.min(page * PAGE_SIZE, data.count) : 0;
+
   return (
     <div className="min-h-screen bg-slate-50">
       <Navbar />
@@ -135,9 +141,9 @@ export default function ProductsPage({ readOnly = false }: { readOnly?: boolean 
         {/* Header */}
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6">
           <div>
-            <h2 className="text-2xl font-bold text-slate-800">Products</h2>
+            <h2 className="text-2xl font-bold text-slate-800">{t('products.title')}</h2>
             <p className="text-slate-500 text-sm mt-0.5">
-              {data ? `${data.count} item${data.count !== 1 ? 's' : ''} total` : 'Loading…'}
+              {data ? t('products.itemsTotal', { count: data.count }) : t('products.loading')}
             </p>
           </div>
           {!readOnly && (
@@ -147,14 +153,14 @@ export default function ProductsPage({ readOnly = false }: { readOnly?: boolean 
                 className="flex items-center gap-2 px-4 py-2.5 border border-slate-300 text-slate-700 hover:bg-slate-100 font-semibold rounded-lg transition shadow-sm text-sm"
               >
                 <Upload size={16} />
-                Import CSV
+                {t('products.importCsv')}
               </button>
               <button
                 onClick={() => setEditingProduct(null)}
                 className="flex items-center gap-2 px-4 py-2.5 bg-blue-600 hover:bg-blue-700 text-white font-semibold rounded-lg transition shadow-sm"
               >
                 <Plus size={18} />
-                Add Product
+                {t('products.addProduct')}
               </button>
             </div>
           )}
@@ -169,14 +175,14 @@ export default function ProductsPage({ readOnly = false }: { readOnly?: boolean 
               type="text"
               value={search}
               onChange={(e) => handleSearchChange(e.target.value)}
-              placeholder="Search by name, description or category…"
+              placeholder={t('products.searchPlaceholder')}
               className="w-full pl-9 pr-8 py-2 border border-slate-300 rounded-lg text-sm text-slate-800 focus:outline-none focus:ring-2 focus:ring-blue-500 transition"
             />
             {search && (
               <button
                 onClick={clearSearch}
                 className="absolute right-2.5 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600 transition"
-                aria-label="Clear search"
+                aria-label={t('products.clearSearch')}
               >
                 <X size={15} />
               </button>
@@ -214,7 +220,7 @@ export default function ProductsPage({ readOnly = false }: { readOnly?: boolean 
                 hasActiveFilter ? 'text-blue-700 font-medium' : 'text-slate-800'
               }`}
             >
-              <option value="">All Categories</option>
+              <option value="">{t('products.allCategories')}</option>
               {categories.map((c) => (
                 <option key={c.id} value={c.id}>
                   {c.code} · {c.name}
@@ -237,10 +243,10 @@ export default function ProductsPage({ readOnly = false }: { readOnly?: boolean 
         {/* Active filter pill */}
         {hasActiveFilter && activeCategoryName && (
           <div className="flex items-center gap-2 mb-4">
-            <span className="text-xs text-slate-500">Filtered by:</span>
+            <span className="text-xs text-slate-500">{t('products.filteredBy')}</span>
             <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-blue-100 text-blue-700 text-xs font-medium">
               {activeCategoryName.code} · {activeCategoryName.name}
-              <button onClick={clearCategory} className="hover:text-blue-900 transition" aria-label="Remove filter">
+              <button onClick={clearCategory} className="hover:text-blue-900 transition" aria-label={t('products.removeFilter')}>
                 <X size={12} />
               </button>
             </span>
@@ -251,13 +257,13 @@ export default function ProductsPage({ readOnly = false }: { readOnly?: boolean 
         <div className="bg-white rounded-xl border border-slate-200 overflow-hidden shadow-sm">
           {isError ? (
             <div className="flex flex-col items-center justify-center py-16 gap-4">
-              <p className="text-slate-500">Failed to load products.</p>
+              <p className="text-slate-500">{t('products.failedToLoad')}</p>
               <button
                 onClick={() => refetch()}
                 className="flex items-center gap-2 px-4 py-2 border border-slate-300 rounded-lg text-sm hover:bg-slate-50 transition"
               >
                 <RefreshCw size={16} />
-                Retry
+                {t('products.retry')}
               </button>
             </div>
           ) : (
@@ -267,29 +273,29 @@ export default function ProductsPage({ readOnly = false }: { readOnly?: boolean 
                   <thead>
                     <tr className="border-b border-slate-200 bg-slate-50">
                       <th className={thClass('name')} onClick={() => handleSort('name')}>
-                        Product Name <SortIcon field="name" ordering={ordering} />
+                        {t('products.headers.productName')} <SortIcon field="name" ordering={ordering} />
                       </th>
-                      <th className="px-4 py-3 text-left font-semibold text-slate-600">Category</th>
+                      <th className="px-4 py-3 text-left font-semibold text-slate-600">{t('products.headers.category')}</th>
                       <th className={`${thClass('price')} text-right`} onClick={() => handleSort('price')}>
-                        Price (AED) <SortIcon field="price" ordering={ordering} />
+                        {t('products.headers.price')} <SortIcon field="price" ordering={ordering} />
                       </th>
                       <th className={`${thClass('stock')} text-right`} onClick={() => handleSort('stock')}>
-                        Stock <SortIcon field="stock" ordering={ordering} />
+                        {t('products.headers.stock')} <SortIcon field="stock" ordering={ordering} />
                       </th>
-                      <th className="px-4 py-3 text-center font-semibold text-slate-600">Active</th>
+                      <th className="px-4 py-3 text-center font-semibold text-slate-600">{t('products.headers.active')}</th>
                       <th
                         className={`${thClass('created_at')} hidden md:table-cell`}
                         onClick={() => handleSort('created_at')}
                       >
-                        Created at <SortIcon field="created_at" ordering={ordering} />
+                        {t('products.headers.createdAt')} <SortIcon field="created_at" ordering={ordering} />
                       </th>
                       <th
                         className={`${thClass('updated_at')} hidden md:table-cell`}
                         onClick={() => handleSort('updated_at')}
                       >
-                        Updated at <SortIcon field="updated_at" ordering={ordering} />
+                        {t('products.headers.updatedAt')} <SortIcon field="updated_at" ordering={ordering} />
                       </th>
-                      <th className="px-4 py-3 text-center font-semibold text-slate-600">Actions</th>
+                      <th className="px-4 py-3 text-center font-semibold text-slate-600">{t('products.headers.actions')}</th>
                     </tr>
                   </thead>
                   <tbody className="divide-y divide-slate-100">
@@ -300,11 +306,11 @@ export default function ProductsPage({ readOnly = false }: { readOnly?: boolean 
                         <td colSpan={8} className="py-16 text-center">
                           <div className="flex flex-col items-center gap-3 text-slate-400">
                             <PackageOpen size={40} />
-                            <p className="font-medium text-slate-500">No products found</p>
+                            <p className="font-medium text-slate-500">{t('products.empty.heading')}</p>
                             <p className="text-xs">
                               {search || categoryFilter
-                                ? 'Try adjusting your search or filter.'
-                                : 'Add your first product to get started.'}
+                                ? t('products.empty.withFilter')
+                                : t('products.empty.noProducts')}
                             </p>
                           </div>
                         </td>
@@ -357,14 +363,14 @@ export default function ProductsPage({ readOnly = false }: { readOnly?: boolean 
                                 <button
                                   onClick={() => setEditingProduct(product)}
                                   className="p-1.5 text-slate-400 hover:text-blue-600 hover:bg-blue-50 rounded-lg transition"
-                                  title="Edit product"
+                                  title={t('products.tooltips.edit')}
                                 >
                                   <Pencil size={15} />
                                 </button>
                                 <button
                                   onClick={() => setDeletingProduct(product)}
                                   className="p-1.5 text-slate-400 hover:text-red-600 hover:bg-red-50 rounded-lg transition"
-                                  title="Delete product"
+                                  title={t('products.tooltips.delete')}
                                 >
                                   <Trash2 size={15} />
                                 </button>
@@ -382,15 +388,14 @@ export default function ProductsPage({ readOnly = false }: { readOnly?: boolean 
               {data && data.count > PAGE_SIZE && (
                 <div className="flex items-center justify-between px-4 py-3 border-t border-slate-200 bg-slate-50">
                   <p className="text-xs text-slate-500">
-                    Showing {(page - 1) * PAGE_SIZE + 1}–{Math.min(page * PAGE_SIZE, data.count)} of{' '}
-                    {data.count}
+                    {t('products.showing', { start, end, total: data.count })}
                   </p>
                   <div className="flex items-center gap-1">
                     <button
                       onClick={() => setPage((p) => Math.max(1, p - 1))}
                       disabled={page === 1}
                       className="p-2 rounded-lg text-slate-500 hover:bg-slate-200 disabled:opacity-40 disabled:cursor-not-allowed transition"
-                      aria-label="Previous page"
+                      aria-label={t('products.previousPage')}
                     >
                       <ChevronLeft size={16} />
                     </button>
@@ -419,7 +424,7 @@ export default function ProductsPage({ readOnly = false }: { readOnly?: boolean 
                       onClick={() => setPage((p) => Math.min(totalPages, p + 1))}
                       disabled={page === totalPages}
                       className="p-2 rounded-lg text-slate-500 hover:bg-slate-200 disabled:opacity-40 disabled:cursor-not-allowed transition"
-                      aria-label="Next page"
+                      aria-label={t('products.nextPage')}
                     >
                       <ChevronRight size={16} />
                     </button>

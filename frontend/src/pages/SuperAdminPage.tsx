@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { useNavigate } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
 import { Eye, ChevronLeft, ChevronRight, PackageOpen, RefreshCw, Package, ClipboardList } from 'lucide-react';
 import Navbar from '../components/Navbar';
 import StockRequestDetail from '../components/StockRequestDetail';
@@ -11,6 +12,7 @@ import type { StockRequest, RequestStatus } from '../types';
 const PAGE_SIZE = 10;
 
 function StatusBadge({ status }: { status: RequestStatus }) {
+  const { t } = useTranslation();
   const map: Record<RequestStatus, string> = {
     pending: 'bg-yellow-100 text-yellow-700',
     approved: 'bg-green-100 text-green-700',
@@ -19,11 +21,11 @@ function StatusBadge({ status }: { status: RequestStatus }) {
     withdrawn: 'bg-slate-100 text-slate-500',
   };
   const labels: Record<RequestStatus, string> = {
-    pending: 'Pending',
-    approved: 'Approved',
-    partially_approved: 'Partial',
-    rejected: 'Rejected',
-    withdrawn: 'Withdrawn',
+    pending: t('status.pending'),
+    approved: t('status.approved'),
+    partially_approved: t('status.partially_approved'),
+    rejected: t('status.rejected'),
+    withdrawn: t('status.withdrawn'),
   };
   return (
     <span className={`inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium ${map[status]}`}>
@@ -33,6 +35,7 @@ function StatusBadge({ status }: { status: RequestStatus }) {
 }
 
 export default function SuperAdminPage() {
+  const { t } = useTranslation();
   const [page, setPage] = useState(1);
   const [viewingId, setViewingId] = useState<number | null>(null);
   const [activeTab, setActiveTab] = useState<'requests' | 'inventory'>('requests');
@@ -67,17 +70,17 @@ export default function SuperAdminPage() {
 
       <main className="max-w-7xl mx-auto px-4 sm:px-6 py-8">
         <div className="mb-6">
-          <h2 className="text-2xl font-bold text-slate-800">Admin Dashboard</h2>
-          <p className="text-slate-500 text-sm mt-0.5">Full visibility across all requests and inventory</p>
+          <h2 className="text-2xl font-bold text-slate-800">{t('superAdminPage.title')}</h2>
+          <p className="text-slate-500 text-sm mt-0.5">{t('superAdminPage.subtitle')}</p>
         </div>
 
         {/* Stats */}
         <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 mb-6">
           {[
-            { label: 'Total Requests', value: stats.total, color: 'text-slate-700' },
-            { label: 'Pending', value: stats.pending, color: 'text-yellow-600' },
-            { label: 'Approved', value: stats.approved, color: 'text-green-600' },
-            { label: 'Rejected', value: stats.rejected, color: 'text-red-500' },
+            { label: t('superAdminPage.stats.total'), value: stats.total, color: 'text-slate-700' },
+            { label: t('superAdminPage.stats.pending'), value: stats.pending, color: 'text-yellow-600' },
+            { label: t('superAdminPage.stats.approved'), value: stats.approved, color: 'text-green-600' },
+            { label: t('superAdminPage.stats.rejected'), value: stats.rejected, color: 'text-red-500' },
           ].map((s) => (
             <div key={s.label} className="bg-white rounded-xl border border-slate-200 p-4 shadow-sm">
               <p className="text-xs text-slate-500 font-medium">{s.label}</p>
@@ -97,7 +100,7 @@ export default function SuperAdminPage() {
             }`}
           >
             <ClipboardList size={15} />
-            All Requests
+            {t('superAdminPage.tabs.requests')}
           </button>
           <button
             onClick={() => setActiveTab('inventory')}
@@ -108,7 +111,7 @@ export default function SuperAdminPage() {
             }`}
           >
             <Package size={15} />
-            Inventory
+            {t('superAdminPage.tabs.inventory')}
           </button>
         </div>
 
@@ -116,13 +119,13 @@ export default function SuperAdminPage() {
           <div className="bg-white rounded-xl border border-slate-200 overflow-hidden shadow-sm">
             {reqError ? (
               <div className="flex flex-col items-center justify-center py-16 gap-4">
-                <p className="text-slate-500">Failed to load requests.</p>
+                <p className="text-slate-500">{t('superAdminPage.failedToLoad')}</p>
                 <button
                   onClick={() => reqRefetch()}
                   className="flex items-center gap-2 px-4 py-2 border border-slate-300 rounded-lg text-sm hover:bg-slate-50 transition"
                 >
                   <RefreshCw size={16} />
-                  Retry
+                  {t('superAdminPage.retry')}
                 </button>
               </div>
             ) : (
@@ -131,14 +134,14 @@ export default function SuperAdminPage() {
                   <table className="w-full text-sm">
                     <thead>
                       <tr className="border-b border-slate-200 bg-slate-50">
-                        <th className="px-4 py-3 text-left font-semibold text-slate-600">Ref #</th>
-                        <th className="px-4 py-3 text-left font-semibold text-slate-600">Submitted By</th>
-                        <th className="px-4 py-3 text-left font-semibold text-slate-600">Decided By</th>
-                        <th className="px-4 py-3 text-left font-semibold text-slate-600">Document Ref</th>
-                        <th className="px-4 py-3 text-center font-semibold text-slate-600">Articles</th>
-                        <th className="px-4 py-3 text-center font-semibold text-slate-600">Status</th>
-                        <th className="px-4 py-3 text-left font-semibold text-slate-600">Date</th>
-                        <th className="px-4 py-3 text-center font-semibold text-slate-600">Actions</th>
+                        <th className="px-4 py-3 text-left font-semibold text-slate-600">{t('superAdminPage.headers.ref')}</th>
+                        <th className="px-4 py-3 text-left font-semibold text-slate-600">{t('superAdminPage.headers.submittedBy')}</th>
+                        <th className="px-4 py-3 text-left font-semibold text-slate-600">{t('superAdminPage.headers.decidedBy')}</th>
+                        <th className="px-4 py-3 text-left font-semibold text-slate-600">{t('superAdminPage.headers.documentRef')}</th>
+                        <th className="px-4 py-3 text-center font-semibold text-slate-600">{t('superAdminPage.headers.articles')}</th>
+                        <th className="px-4 py-3 text-center font-semibold text-slate-600">{t('superAdminPage.headers.status')}</th>
+                        <th className="px-4 py-3 text-left font-semibold text-slate-600">{t('superAdminPage.headers.date')}</th>
+                        <th className="px-4 py-3 text-center font-semibold text-slate-600">{t('superAdminPage.headers.actions')}</th>
                       </tr>
                     </thead>
                     <tbody className="divide-y divide-slate-100">
@@ -157,7 +160,7 @@ export default function SuperAdminPage() {
                           <td colSpan={8} className="py-16 text-center">
                             <div className="flex flex-col items-center gap-3 text-slate-400">
                               <PackageOpen size={40} />
-                              <p className="font-medium text-slate-500">No requests found</p>
+                              <p className="font-medium text-slate-500">{t('superAdminPage.empty.heading')}</p>
                             </div>
                           </td>
                         </tr>
@@ -189,7 +192,7 @@ export default function SuperAdminPage() {
                               <button
                                 onClick={() => setViewingId(req.id)}
                                 className="p-1.5 text-slate-400 hover:text-blue-600 hover:bg-blue-50 rounded-lg transition"
-                                title="View details"
+                                title={t('superAdminPage.tooltips.view')}
                               >
                                 <Eye size={15} />
                               </button>
@@ -204,7 +207,7 @@ export default function SuperAdminPage() {
                 {requestsData && requestsData.count > PAGE_SIZE && (
                   <div className="flex items-center justify-between px-4 py-3 border-t border-slate-200 bg-slate-50">
                     <p className="text-xs text-slate-500">
-                      Showing {(page - 1) * PAGE_SIZE + 1}–{Math.min(page * PAGE_SIZE, requestsData.count)} of {requestsData.count}
+                      {t('superAdminPage.showing', { start: (page - 1) * PAGE_SIZE + 1, end: Math.min(page * PAGE_SIZE, requestsData.count), total: requestsData.count })}
                     </p>
                     <div className="flex items-center gap-1">
                       <button
@@ -243,7 +246,7 @@ export default function SuperAdminPage() {
         {activeTab === 'inventory' && (
           <div className="bg-white rounded-xl border border-slate-200 p-6 shadow-sm flex flex-col sm:flex-row sm:items-center justify-between gap-4">
             <div>
-              <p className="text-sm text-slate-500 font-medium">Total products in system</p>
+              <p className="text-sm text-slate-500 font-medium">{t('superAdminPage.totalProducts')}</p>
               <p className="text-3xl font-bold text-slate-800 mt-1">{productsData?.count ?? '…'}</p>
             </div>
             <button
@@ -251,7 +254,7 @@ export default function SuperAdminPage() {
               className="flex items-center gap-2 px-5 py-2.5 bg-[#ED7E07] hover:bg-[#d06d06] text-white font-semibold rounded-lg transition shadow-sm"
             >
               <Package size={17} />
-              Manage Inventory
+              {t('superAdminPage.manageInventory')}
             </button>
           </div>
         )}
