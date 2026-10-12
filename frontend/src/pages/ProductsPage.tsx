@@ -17,7 +17,7 @@ import {
 const PAGE_SIZE = 10;
 
 // Columns that support server-side ordering
-type SortField = 'name' | 'price' | 'stock' | 'created_at';
+type SortField = 'name' | 'price' | 'stock' | 'created_at' | 'updated_at';
 
 function toOrdering(field: SortField, dir: 'asc' | 'desc') {
   return dir === 'asc' ? field : `-${field}`;
@@ -47,7 +47,7 @@ function StatusBadge({ isActive }: { isActive: boolean }) {
 function SkeletonRow() {
   return (
     <tr className="animate-pulse">
-      {[...Array(7)].map((_, i) => (
+      {[...Array(8)].map((_, i) => (
         <td key={i} className="px-4 py-3">
           <div className="h-4 bg-slate-200 rounded w-3/4" />
         </td>
@@ -267,7 +267,7 @@ export default function ProductsPage({ readOnly = false }: { readOnly?: boolean 
                   <thead>
                     <tr className="border-b border-slate-200 bg-slate-50">
                       <th className={thClass('name')} onClick={() => handleSort('name')}>
-                        Name <SortIcon field="name" ordering={ordering} />
+                        Product Name <SortIcon field="name" ordering={ordering} />
                       </th>
                       <th className="px-4 py-3 text-left font-semibold text-slate-600">Category</th>
                       <th className={`${thClass('price')} text-right`} onClick={() => handleSort('price')}>
@@ -276,12 +276,18 @@ export default function ProductsPage({ readOnly = false }: { readOnly?: boolean 
                       <th className={`${thClass('stock')} text-right`} onClick={() => handleSort('stock')}>
                         Stock <SortIcon field="stock" ordering={ordering} />
                       </th>
-                      <th className="px-4 py-3 text-center font-semibold text-slate-600">Status</th>
+                      <th className="px-4 py-3 text-center font-semibold text-slate-600">Active</th>
                       <th
                         className={`${thClass('created_at')} hidden md:table-cell`}
                         onClick={() => handleSort('created_at')}
                       >
-                        Added <SortIcon field="created_at" ordering={ordering} />
+                        Created at <SortIcon field="created_at" ordering={ordering} />
+                      </th>
+                      <th
+                        className={`${thClass('updated_at')} hidden md:table-cell`}
+                        onClick={() => handleSort('updated_at')}
+                      >
+                        Updated at <SortIcon field="updated_at" ordering={ordering} />
                       </th>
                       <th className="px-4 py-3 text-center font-semibold text-slate-600">Actions</th>
                     </tr>
@@ -291,7 +297,7 @@ export default function ProductsPage({ readOnly = false }: { readOnly?: boolean 
                       [...Array(PAGE_SIZE)].map((_, i) => <SkeletonRow key={i} />)
                     ) : data?.results.length === 0 ? (
                       <tr>
-                        <td colSpan={7} className="py-16 text-center">
+                        <td colSpan={8} className="py-16 text-center">
                           <div className="flex flex-col items-center gap-3 text-slate-400">
                             <PackageOpen size={40} />
                             <p className="font-medium text-slate-500">No products found</p>
@@ -339,6 +345,9 @@ export default function ProductsPage({ readOnly = false }: { readOnly?: boolean 
                           </td>
                           <td className="px-4 py-3 text-slate-400 text-xs hidden md:table-cell">
                             {new Date(product.created_at).toLocaleDateString('en-GB')}
+                          </td>
+                          <td className="px-4 py-3 text-slate-400 text-xs hidden md:table-cell">
+                            {new Date(product.updated_at).toLocaleDateString('en-GB')}
                           </td>
                           <td className="px-4 py-3">
                             {readOnly ? (
