@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
-import { Eye, ChevronLeft, ChevronRight, PackageOpen, RefreshCw, Users, ClipboardList } from 'lucide-react';
+import { useNavigate } from 'react-router-dom';
+import { Eye, ChevronLeft, ChevronRight, PackageOpen, RefreshCw, Package, ClipboardList } from 'lucide-react';
 import Navbar from '../components/Navbar';
 import StockRequestDetail from '../components/StockRequestDetail';
 import { listRequests } from '../api/requests';
@@ -35,6 +36,7 @@ export default function SuperAdminPage() {
   const [page, setPage] = useState(1);
   const [viewingId, setViewingId] = useState<number | null>(null);
   const [activeTab, setActiveTab] = useState<'requests' | 'inventory'>('requests');
+  const navigate = useNavigate();
 
   const { data: requestsData, isLoading: reqLoading, isError: reqError, refetch: reqRefetch } = useQuery({
     queryKey: ['requests', page],
@@ -104,7 +106,7 @@ export default function SuperAdminPage() {
                 : 'text-slate-500 hover:text-slate-700'
             }`}
           >
-            <Users size={15} />
+            <Package size={15} />
             Inventory
           </button>
         </div>
@@ -238,14 +240,18 @@ export default function SuperAdminPage() {
         )}
 
         {activeTab === 'inventory' && (
-          <div className="bg-white rounded-xl border border-slate-200 p-6 shadow-sm">
-            <p className="text-slate-600 mb-4">
-              Total products in system:{' '}
-              <span className="font-bold text-slate-800">{productsData?.count ?? '…'}</span>
-            </p>
-            <p className="text-slate-500 text-sm">
-              Use the Inventory link in the navigation to manage products directly.
-            </p>
+          <div className="bg-white rounded-xl border border-slate-200 p-6 shadow-sm flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+            <div>
+              <p className="text-sm text-slate-500 font-medium">Total products in system</p>
+              <p className="text-3xl font-bold text-slate-800 mt-1">{productsData?.count ?? '…'}</p>
+            </div>
+            <button
+              onClick={() => navigate('/admin/products')}
+              className="flex items-center gap-2 px-5 py-2.5 bg-[#ED7E07] hover:bg-[#d06d06] text-white font-semibold rounded-lg transition shadow-sm"
+            >
+              <Package size={17} />
+              Manage Inventory
+            </button>
           </div>
         )}
       </main>
