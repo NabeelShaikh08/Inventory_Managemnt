@@ -135,7 +135,7 @@ export default function SuperAdminPage() {
                         <th className="px-4 py-3 text-left font-semibold text-slate-600">Submitted By</th>
                         <th className="px-4 py-3 text-left font-semibold text-slate-600">Decided By</th>
                         <th className="px-4 py-3 text-left font-semibold text-slate-600">Document Ref</th>
-                        <th className="px-4 py-3 text-center font-semibold text-slate-600">Lines</th>
+                        <th className="px-4 py-3 text-center font-semibold text-slate-600">Articles</th>
                         <th className="px-4 py-3 text-center font-semibold text-slate-600">Status</th>
                         <th className="px-4 py-3 text-left font-semibold text-slate-600">Date</th>
                         <th className="px-4 py-3 text-center font-semibold text-slate-600">Actions</th>

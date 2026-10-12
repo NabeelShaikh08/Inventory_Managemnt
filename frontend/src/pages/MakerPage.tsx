@@ -103,7 +103,7 @@ export default function MakerPage() {
                     <tr className="border-b border-slate-200 bg-slate-50">
                       <th className="px-4 py-3 text-left font-semibold text-slate-600">Ref #</th>
                       <th className="px-4 py-3 text-left font-semibold text-slate-600">Document Ref</th>
-                      <th className="px-4 py-3 text-center font-semibold text-slate-600">Lines</th>
+                      <th className="px-4 py-3 text-center font-semibold text-slate-600">Articles</th>
                       <th className="px-4 py-3 text-center font-semibold text-slate-600">Status</th>
                       <th className="px-4 py-3 text-left font-semibold text-slate-600">Submitted</th>
                       <th className="px-4 py-3 text-center font-semibold text-slate-600">Actions</th>

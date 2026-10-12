@@ -298,14 +298,14 @@ export default function StockRequestForm({ onClose, onSuccess }: Props) {
             {tab === 'manual' && (
               <div>
                 <div className="flex items-center justify-between mb-3">
-                  <h3 className="font-semibold text-slate-700">Request Lines</h3>
+                  <h3 className="font-semibold text-slate-700">Articles</h3>
                   <button
                     type="button"
                     onClick={addLine}
                     className="flex items-center gap-1.5 text-sm text-[#ED7E07] hover:text-[#d06d06] font-medium"
                   >
                     <Plus size={15} />
-                    Add Line
+                    Add Article
                   </button>
                 </div>
 
@@ -314,7 +314,7 @@ export default function StockRequestForm({ onClose, onSuccess }: Props) {
                     <div key={idx} className="p-4 border border-slate-200 rounded-xl bg-slate-50 space-y-3">
                       <div className="flex items-center justify-between">
                         <span className="text-xs font-semibold text-slate-500 uppercase tracking-wide">
-                          Line {idx + 1}
+                          Article {idx + 1}
                         </span>
                         {lines.length > 1 && (
                           <button

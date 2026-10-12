@@ -131,7 +131,7 @@ export default function StockRequestDetail({ requestId, onClose, canDecide, onDe
 
               <div className="space-y-3">
                 <h3 className="font-semibold text-slate-700 text-sm">
-                  Lines ({req.lines.length})
+                  Articles ({req.lines.length})
                 </h3>
                 {req.lines.map((line: RequestLine) => (
                   <div
