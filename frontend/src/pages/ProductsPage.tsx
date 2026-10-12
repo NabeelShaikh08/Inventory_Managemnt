@@ -9,7 +9,7 @@ import ProductForm from '../components/ProductForm';
 import DeleteConfirmDialog from '../components/DeleteConfirmDialog';
 import {
   Plus, Search, ChevronLeft, ChevronRight, Pencil, Trash2,
-  RefreshCw, PackageOpen, Filter,
+  RefreshCw, PackageOpen, Filter, X, ArrowUpDown,
 } from 'lucide-react';
 
 const PAGE_SIZE = 10;
@@ -41,6 +41,7 @@ function SkeletonRow() {
 export default function ProductsPage({ readOnly = false }: { readOnly?: boolean }) {
   const [search, setSearch] = useState('');
   const [categoryFilter, setCategoryFilter] = useState<number | ''>('');
+  const [ordering, setOrdering] = useState('name');
   const [page, setPage] = useState(1);
   const [editingProduct, setEditingProduct] = useState<Product | null | undefined>(undefined);
   const [deletingProduct, setDeletingProduct] = useState<Product | null>(null);
@@ -49,6 +50,7 @@ export default function ProductsPage({ readOnly = false }: { readOnly?: boolean 
   const filters: ProductFilters = {
     search: debouncedSearch || undefined,
     category: categoryFilter || undefined,
+    ordering,
     page,
     page_size: PAGE_SIZE,
   };
@@ -73,6 +75,16 @@ export default function ProductsPage({ readOnly = false }: { readOnly?: boolean 
 
   const handleCategoryChange = (v: number | '') => {
     setCategoryFilter(v);
+    setPage(1);
+  };
+
+  const handleOrderingChange = (v: string) => {
+    setOrdering(v);
+    setPage(1);
+  };
+
+  const clearSearch = () => {
+    setSearch('');
     setPage(1);
   };
 
@@ -102,6 +114,7 @@ export default function ProductsPage({ readOnly = false }: { readOnly?: boolean 
 
         {/* Filters */}
         <div className="bg-white rounded-xl border border-slate-200 p-4 mb-6 flex flex-col sm:flex-row gap-3">
+          {/* Search with clear button */}
           <div className="relative flex-1">
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" size={16} />
             <input
@@ -109,11 +122,21 @@ export default function ProductsPage({ readOnly = false }: { readOnly?: boolean 
               value={search}
               onChange={(e) => handleSearchChange(e.target.value)}
               placeholder="Search by name, description or category…"
-              className="w-full pl-9 pr-4 py-2 border border-slate-300 rounded-lg text-sm text-slate-800 focus:outline-none focus:ring-2 focus:ring-blue-500 transition"
+              className="w-full pl-9 pr-8 py-2 border border-slate-300 rounded-lg text-sm text-slate-800 focus:outline-none focus:ring-2 focus:ring-blue-500 transition"
             />
+            {search && (
+              <button
+                onClick={clearSearch}
+                className="absolute right-2.5 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600 transition"
+                aria-label="Clear search"
+              >
+                <X size={15} />
+              </button>
+            )}
           </div>
 
-          <div className="relative sm:w-56">
+          {/* Category filter */}
+          <div className="relative sm:w-48">
             <Filter className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" size={16} />
             <select
               value={categoryFilter}
@@ -126,6 +149,25 @@ export default function ProductsPage({ readOnly = false }: { readOnly?: boolean 
                   {c.name}
                 </option>
               ))}
+            </select>
+          </div>
+
+          {/* Sort */}
+          <div className="relative sm:w-44">
+            <ArrowUpDown className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" size={15} />
+            <select
+              value={ordering}
+              onChange={(e) => handleOrderingChange(e.target.value)}
+              className="w-full pl-9 pr-4 py-2 border border-slate-300 rounded-lg text-sm text-slate-800 focus:outline-none focus:ring-2 focus:ring-blue-500 transition appearance-none"
+            >
+              <option value="name">Name A–Z</option>
+              <option value="-name">Name Z–A</option>
+              <option value="price">Price: Low–High</option>
+              <option value="-price">Price: High–Low</option>
+              <option value="stock">Stock: Low–High</option>
+              <option value="-stock">Stock: High–Low</option>
+              <option value="-created_at">Newest First</option>
+              <option value="created_at">Oldest First</option>
             </select>
           </div>
         </div>

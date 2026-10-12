@@ -237,13 +237,13 @@ export default function StockRequestDetail({ requestId, onClose, canDecide, onDe
                 <div className="space-y-3 pt-2">
                   <div>
                     <label className="block text-sm font-medium text-slate-700 mb-1">
-                      Checker Remarks <span className="text-slate-400 font-normal">(optional)</span>
+                      Approval Remarks <span className="text-slate-400 font-normal">(optional)</span>
                     </label>
                     <textarea
                       value={checkerRemarks}
                       onChange={(e) => setCheckerRemarks(e.target.value)}
                       rows={2}
-                      placeholder="Any notes for the maker"
+                      placeholder="Any notes for the maker…"
                       className="w-full px-3 py-2 border border-slate-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-orange-400 transition resize-none"
                     />
                   </div>
@@ -260,14 +260,14 @@ export default function StockRequestDetail({ requestId, onClose, canDecide, onDe
                     disabled={!allPendingDecided || decideMut.isPending}
                     className="w-full py-2.5 bg-[#ED7E07] hover:bg-[#d06d06] disabled:bg-orange-200 text-white font-semibold rounded-lg transition"
                   >
-                    {decideMut.isPending ? 'Submitting…' : 'Submit Decision'}
+                    {decideMut.isPending ? 'Submitting…' : 'Submit Approval'}
                   </button>
                 </div>
               )}
 
               {req.decided_by_username && (
                 <div className="text-xs text-slate-400 pt-2">
-                  Decided by <span className="font-medium text-slate-600">{req.decided_by_username}</span>
+                  Approved by <span className="font-medium text-slate-600">{req.decided_by_username}</span>
                   {req.decided_at && (
                     <> on {new Date(req.decided_at).toLocaleDateString('en-GB')}</>
                   )}

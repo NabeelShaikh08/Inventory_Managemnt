@@ -78,7 +78,7 @@ export default function MakerPage() {
               className="flex items-center gap-2 px-4 py-2.5 bg-[#ED7E07] hover:bg-[#d06d06] text-white font-semibold rounded-lg transition shadow-sm"
             >
               <Plus size={18} />
-              New Request
+              New Inventory Upload
             </button>
           </div>
         </div>
