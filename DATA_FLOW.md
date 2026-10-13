@@ -136,16 +136,21 @@ Each `RequestLine` has one of three actions. On approval:
 ┌─────────────────────────────────────────────────────────────┐
 │  action = "stock_in"                                        │
 │  → Product.stock += quantity                                │
-│  Fields: product (FK), quantity, unit_cost, supplier        │
+│  Fields: product (FK), quantity, unit_cost, supplier,       │
+│          uom, warehouse_code, barcode                       │
 ├─────────────────────────────────────────────────────────────┤
 │  action = "new_product"                                     │
 │  → Product.objects.create(...)                              │
-│  Fields: proposed_name, proposed_price, proposed_stock,     │
-│          proposed_category, proposed_description            │
+│  Fields: proposed_name, proposed_sku, proposed_price,       │
+│          proposed_stock, proposed_category,                 │
+│          proposed_description, proposed_uom,                │
+│          proposed_subcategory, proposed_min_stock,          │
+│          proposed_reorder_level, warehouse_code, barcode    │
 ├─────────────────────────────────────────────────────────────┤
 │  action = "edit_product"                                    │
 │  → Product fields updated in-place                         │
 │  Fields: product (FK) + any proposed_* fields to change     │
+│          (same proposed_* set as new_product above)         │
 └─────────────────────────────────────────────────────────────┘
 ```
 
@@ -195,10 +200,25 @@ inventory_requestline
 ├── request_id  (FK → inventory_stockrequest)
 ├── action  [stock_in | new_product | edit_product]
 ├── product_id  (FK → inventory_product, nullable)
-├── quantity, unit_cost, supplier
-├── proposed_name, proposed_price, proposed_stock
+├── quantity  (decimal, nullable)
+├── unit_cost  (decimal, nullable)
+├── supplier
+├── uom                          ← unit of measure for stock_in
+├── proposed_name
+├── proposed_sku                 ← e.g. CEM-0001
+├── proposed_price  (decimal, nullable)
+├── proposed_stock  (integer, nullable)
 ├── proposed_category_id  (FK → inventory_category, nullable)
 ├── proposed_description
+├── proposed_uom                 ← unit of measure for new/edit product
+├── warehouse_code               ← default: MAIN-WH
+├── subcategory
+├── proposed_subcategory
+├── min_stock  (integer, nullable)
+├── proposed_min_stock  (integer, nullable)
+├── reorder_level  (integer, nullable)
+├── proposed_reorder_level  (integer, nullable)
+├── barcode
 ├── line_status  [pending | approved | rejected]
 └── rejection_reason
 ```
