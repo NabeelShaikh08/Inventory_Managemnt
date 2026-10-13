@@ -52,20 +52,25 @@ Al Yafour General Contracting · Full-Stack Interview Project
 - [x] Login page with JWT auth, Zod validation, show/hide password
 - [x] Role-based routing (maker→/maker, checker→/checker, superadmin→/admin)
 - [x] Role-aware Navbar with hamburger menu on mobile
-- [x] MakerPage — submit requests, withdraw pending, view own history
-- [x] CheckerPage — approval queue, per-line approve/reject with reason
+- [x] Language toggle (EN / عربي) in Navbar — persisted via localStorage
+- [x] MakerPage — submit requests, bulk withdraw, edit & re-submit withdrawn, view own history
+- [x] CheckerPage — approval queue, per-line approve/reject with reason, checker remarks
 - [x] SuperAdminPage — stats dashboard, all requests, full inventory access
-- [x] ProductsPage — read-only for Maker/Checker, full CRUD for SuperAdmin
-- [x] StockRequestForm — multi-line form (stock_in / new_product / edit_product)
-- [x] StockRequestDetail — request viewer + inline decision panel for Checker/Admin
+- [x] ProductsPage — read-only for Maker/Checker, full CRUD for SuperAdmin, sortable columns
+- [x] StockRequestForm — multi-line manual form + bulk CSV tab (stock_in / new_product / edit_product)
+- [x] StockRequestDetail — request viewer + inline decision panel for Checker/Admin + checker decision banner
 - [x] ProductForm — Add/Edit with Zod + react-hook-form, inline field errors
 - [x] DeleteConfirmDialog — confirmation before delete
+- [x] BulkProductUpload — admin CSV import for direct product creation
+- [x] Full bilingual English + Arabic with RTL layout (i18next, Cairo font, Tailwind logical properties)
+- [x] Extended RequestLine fields — UOM, warehouse, SKU, subcategory, min stock, reorder level, barcode
 - [x] TanStack Query — caching, background refetch, stale time 30s
 - [x] 300ms debounced search
 - [x] JWT refresh interceptor (silent token renewal on 401)
 - [x] Loading skeleton rows, error + retry, empty states
 - [x] Responsive design — mobile + desktop
 - [x] Al Yafour branded logo and orange (#ED7E07) colour scheme
+- [x] Vitest + React Testing Library frontend unit tests
 - [x] `_redirects` file for SPA routing on Render
 - [x] Deployed on Render Static Site
 
@@ -82,12 +87,11 @@ These are items from the full PRD v2 that were scoped out for the interview subm
 | Product image upload | Not in company brief; PRD Phase 2 |
 | Stock ledger (append-only history) | PRD architecture; current build uses direct integer field |
 | Audit trail with hash chaining | PRD enterprise requirement |
-| Bilingual English + Arabic (RTL) | PRD requirement; not in company brief |
-| Bulk CSV stock upload | PRD convenience feature |
+| SKU auto-generation on approval | PRD Phase 2 — SKU field is captured in request but not auto-assigned on approve |
 | AI Checker copilot / smart search | PRD Part 7 (AI phase) |
 | PostgreSQL database | Using SQLite (fine for demo; needs Postgres for production) |
 | Persistent data across deploys | Free Render tier has no persistent disk |
-| Frontend unit tests | Jest + React Testing Library not yet added |
+| Frontend unit tests (expanded) | Basic Vitest + RTL tests added; coverage can be expanded |
 | Optimistic UI updates | TanStack Query mutation cache not wired up |
 
 ---
@@ -163,6 +167,12 @@ pytest inventory/tests.py -v
 | `fix: mobile responsiveness` | Hamburger menu, responsive grids, modal padding |
 | `chore: render deployment` | Gunicorn, WhiteNoise, production settings |
 | `fix: SPA routing` | `_redirects` for Render static site |
+| `feat: bulk CSV import + sort/filter` | Admin bulk CSV product import, column sorting |
+| `test: frontend Vitest + RTL tests` | Vitest + React Testing Library unit tests added |
+| `feat: UOM/warehouse/subcategory fields` | Extended RequestLine fields, bulk withdraw, re-submit withdrawn |
+| `fix: timestamps, column names, UI copy` | Date+time on details, renamed headers to spec |
+| `feat: bilingual Arabic/English RTL` | i18next, ~350 strings, Cairo font, RTL layout |
+| `docs: update DATA_FLOW.md` | Schema and fields updated to reflect all changes |
 
 ---
 
@@ -182,5 +192,7 @@ pytest inventory/tests.py -v
 | HTTP client | axios | — |
 | Icons | lucide-react | — |
 | Backend tests | pytest + pytest-django | — |
+| Frontend tests | Vitest + React Testing Library | — |
+| Internationalisation | i18next + react-i18next | — |
 | Containerisation | Docker + Compose | — |
 | Hosting | Render | — |
